@@ -1,0 +1,213 @@
+/* General Reset & Body */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f1f4f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Container Box */
+.container {
+  background: #ffffff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+h2, h1 {
+  margin-bottom: 25px;
+  color: #333;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"] {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0 15px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+/* Buttons */
+button,
+input[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background: #007bff;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover,
+input[type="submit"]:hover {
+  background: #0056b3;
+}
+
+/* Links */
+.extra-buttons {
+  margin-top: 15px;
+}
+
+.extra-buttons a {
+  color: #007bff;
+  text-decoration: none;
+  margin: 0 8px;
+  font-weight: bold;
+}
+
+.extra-buttons a:hover {
+  text-decoration: underline;
+}
+
+/* Error Message */
+.error {
+  color: red;
+  font-size: 13px;
+  display: none;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
+/* Wallet */
+.wallet {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  background: #2c2c2c;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+}
+
+/* Game UI */
+.menu-container {
+  position: absolute;
+  top: 20px;
+  left: 30px;
+}
+
+.menu-icon {
+  font-size: 24px;
+  background: #333;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.dropdown {
+  display: none;
+  position: absolute;
+  top: 45px;
+  left: 0;
+  background: #fff;
+  min-width: 180px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 10;
+  overflow: hidden;
+}
+
+.dropdown a {
+  display: block;
+  padding: 12px 16px;
+  color: #333;
+  text-decoration: none;
+}
+
+.dropdown a:hover {
+  background: #f0f0f0;
+}
+
+/* Coin Flip */
+.coin {
+  width: 120px;
+  height: 120px;
+  margin: 30px auto;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.coin div {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  border-radius: 50%;
+  font-size: 24px;
+  line-height: 120px;
+  text-align: center;
+  font-weight: bold;
+  color: white;
+  backface-visibility: hidden;
+}
+
+.heads {
+  background: #3498db;
+  transform: rotateY(0deg);
+}
+
+.tails {
+  background: #e74c3c;
+  transform: rotateY(180deg);
+}
+
+/* Controls */
+.controls input {
+  width: calc(100% - 20px);
+  margin: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+.sides button {
+  width: 45%;
+  margin: 5px;
+  background: #2c2c2c;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.sides button.selected {
+  background: #f39c12 !important;
+}
+
+.start-btn {
+  margin-top: 15px;
+  width: 100%;
+  background: #00c897;
+  font-size: 16px;
+}
+
+.history {
+  text-align: left;
+  margin-top: 25px;
+}
+
+.history ul {
+  list-style: none;
+  padding: 0;
+}

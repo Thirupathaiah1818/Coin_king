@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<ht lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Signup | Coin King</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<b>
+  <div class="form-container">
+    <h2>Create Account</h2>
+    <form id="signupForm">
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="text" id="phone" placeholder="Phone Number" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+      <button type="submit">Sign Up</button>
+    </form>
+    <p>Already have an account? <a href="index.html">Login</a></p>
+  </div>
+
+ <script>
+ 
+const API_URL = "http://localhost:3000/api";
+
+document.getElementById("signupForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const username = document.getElementById("username").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+  try {
+    const response = await fetch(`${API_URL}/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, phone, email, password, confirmPassword })
+    });
+
+    const result = await response.json();
+    if (response.ok) {
+      alert("Signup successful! Your User ID: " + result.userId);
+      window.location.href = "index.html";
+    } else {
+      alert(result.message);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("An error occurred.");
+  }
+});
+
+
+
+</script>
+
+</body>
+</html>

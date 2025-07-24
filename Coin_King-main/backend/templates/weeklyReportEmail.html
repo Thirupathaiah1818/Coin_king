@@ -1,0 +1,48 @@
+const nodemailer = require('nodemailer');
+const handlebars = require('handlebars');
+const fs = require('fs');
+const path = require('path');
+
+// Read the HTML template
+const templatePath = path.join(__dirname, 'weeklyReportTemplate.html');
+const source = fs.readFileSync(templatePath, 'utf-8');
+
+// Compile the template using Handlebars
+const template = handlebars.compile(source);
+
+// Prepare the email data
+const emailData = {
+  summary: 'This week was full of flipping and fun!',
+  totalUsers: 150,
+  totalBets: 420,
+  totalPayouts: 9800
+};
+
+// Generate the final HTML with dynamic data
+const htmlToSend = template(emailData);
+
+// Set up Nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'your-email@gmail.com', // Your email
+    pass: 'your-email-password' // Your email password (consider using environment variables for better security)
+  }
+});
+
+// Email options
+const mailOptions = {
+  from: 'your-email@gmail.com',
+  to: 'admin-email@example.com', // Admin email
+  subject: 'Coin King – Weekly Report',
+  html: htmlToSend // The final HTML content
+};
+
+// Send the email
+transporter.sendMail(mailOptions, (error, info) => {
+  if (error) {
+    console.log('Error sending email:', error);
+  } else {
+    console.log('Email sent:', info.response);
+  }
+});

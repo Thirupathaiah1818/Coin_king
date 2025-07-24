@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin King</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .wallet {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: #FFD700;
+            color: #000;
+            font-weight: bold;
+            padding: 12px 15px;
+            border-radius: 25px;
+            box-shadow: 0 0 12px #FFD700;
+            font-size: 15px;
+            z-index: 1000;
+            transition: 0.3s ease;
+            height: auto;
+            line-height: 1.2;
+        }
+        .wallet.win { background: #00c897; color: #fff; box-shadow: 0 0 12px #00c897; }
+        .wallet.lose { background: #ff4444; color: #fff; box-shadow: 0 0 12px #ff4444; }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding-top: 60px;
+            flex-direction: column;
+        }
+        .game-box {
+            background: #1f1f1f;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px #000;
+            text-align: center;
+            width: 360px;
+            max-width: 95%;
+        }
+        .coin {
+            width: 120px;
+            height: 120px;
+            margin: 20px auto;
+            perspective: 1000px;
+        }
+
+        .coin-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .spin {
+            animation: rotateCoin 5s linear;
+        }
+
+        @keyframes rotateCoin {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(7200deg); }
+        }
+
+        .side {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            box-shadow: 0 0 12px #FFD700;
+            color: #000;
+        }
+
+        .king { transform: rotateY(0deg); }
+        .queen { transform: rotateY(180deg); }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        .bet-controls button {
+            padding: 10px;
+            width: 40px;
+            font-size: 20px;
+            font-weight: bold;
+            background: #FFD700;
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            margin: 0 8px;
+            cursor: pointer;
+        }
+
+        #bet {
+            background: #fff;
+            color: #000;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100px;
+            text-align: center;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .side-btn {
+            background-color: #333;
+            color: #fff;
+            cursor: pointer;
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .side-btn.selected {
+            background-color: #FFD700;
+            color: #000;
+        }
+
+        .start-btn {
+            background-color: #00c897;
+            color: #fff;
+            width: 200px;
+            cursor: pointer;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        #result {
+            margin-top: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #FFD700;
+            display: none;
+        }
+
+        /* Removed #cooldown as it's replaced by game timer */
+
+        .history {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .history ul {
+            padding-left: 20px;
+            list-style: none;
+        }
+
+        .history li.win { color: #00ff99; }
+        .history li.lose { color: #ff6666; }
+
+        .section {
+            padding: 20px;
+            width: 100%;
+        }
+        .section-container {
+            font-size:15px;
+            background-color: #151515;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            text-align:left;
+            padding: 8px;
+        }
+
+        th {
+            background-color:rgb(45, 37, 37);
+        }
+        .section-container input[type="number"],
+        .section-container input[type="text"],
+        .section-container input[type="file"] {
+            width: calc(100% - 24px); /* Adjust for padding and border */
+            padding: 10px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #555; /* Darker, softer border */
+            border-radius: 6px; /* More rounded corners */
+            box-sizing: border-box;
+            background-color: #222; /* Deeper background */
+            color: #eee; /* Lighter text */
+            font-size: 0.95em;
+        }
+
+        .section-container input:focus {
+            outline: none;
+            border-color: #00bfa5; /* Accent color on focus */
+            box-shadow: 0 0 5px rgba(0, 191, 165, 0.5); /* Subtle glow on focus */
+        }
+
+        .section-container button {
+            background-color: #2e7d32; /* Pleasant green */
+            color: #f0f8ea; /* Light, contrasting text */
+            padding: 12px 18px; /* Slightly larger padding */
+            border: none;
+            border-radius: 6px; /* More rounded corners */
+            cursor: pointer;
+            width: 100%;
+            margin-top: 12px; /* Increased margin */
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+        }
+
+        .section-container button:hover {
+            background-color: #1b5e20;
+            transform: scale(1.02);
+        }
+
+        .section-container label {
+            display: block;
+            margin-top: 15px; /* Increased margin */
+            margin-bottom: 6px;
+            color: #b0bec5; /* Softer label color */
+            text-align: left;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        #addBalanceSuccessMessage,
+        #addBalanceErrorMessage { /* Combined styles for success/error messages */
+            text-align: center;
+            margin-top: 15px;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.95em;
+            display: none; /* Initially hidden - show with JavaScript */
+        }
+
+        #addBalanceSuccessMessage {
+            background-color: rgba(76, 175, 80, 0.15); /* Light green */
+            color: #2e7d32; /* Darker pleasant green text */
+            border: 1px solid #4caf50; /* Green border */
+        }
+
+        #addBalanceErrorMessage {
+            background-color: rgba(255, 69, 0, 0.15); /* Light orange-red */
+            color: #d32f2f; /* Darker red text */
+            border: 1px solid #ff4500; /* Orange-red border */
+        }
+
+        #withdrawSuccessMessage,
+        #popupMessageWithdraw,
+        #withdrawErrorMessage { /* Added withdrawErrorMessage */
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9em;
+            display: none; /* Initially hidden */
+        }
+
+        #withdrawSuccessMessage {
+            background-color: rgba(76, 175, 80, 0.15); /* Light green */
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+
+        #popupMessageWithdraw {
+            background-color: rgba(255, 167, 38, 0.15); /* Light amber */
+            color: #ff9800;
+            border: 1px solid #ff9800;
+        }
+
+        #withdrawErrorMessage { /* New style for withdraw errors */
+            background-color: rgba(255, 69, 0, 0.15);
+            color: #d32f2f;
+            border: 1px solid #ff4500;
+        }
+
+
+        .detail-row td {
+            font-size: 0.9em;
+            background-color: #1c1c1c; /* Slightly darker background */
+            color: #90a4ae; /* Softer text color */
+            padding: 10px;
+        }
+
+        /* Update this line in your existing CSS */
+        .detail-row td[colspan="7"] { /* Changed from colspan="6" to colspan="7" */
+            font-size: 0.9em;
+            background-color: #1c1c1c;
+            color: #90a4ae;
+            padding: 10px;
+        }
+
+
+        /* Attractive and Pleasant Menu Details Styles */
+        .offcanvas-header {
+            background-color: #37474f; /* Cool grey header */
+            border-bottom: 1px solid #546e7a;
+            padding: 18px;
+        }
+
+        .offcanvas-title {
+            color: #eceff1 !important; /* Very light grey title */
+            font-size: 1.4em;
+            font-weight: bold;
+            letter-spacing: 0.7px;
+        }
+
+        .offcanvas-body {
+            padding: 25px;
+            background-color: #263238; /* Darker, pleasant background */
+        }
+
+        .offcanvas-body .navbar-nav {
+            margin-bottom: 20px;
+        }
+
+        .offcanvas-body .navbar-nav .nav-item {
+            margin-bottom: 10px;
+        }
+
+        .offcanvas-body .navbar-nav .nav-link {
+            color: #b0bec5 !important; /* Soft blue-grey link color */
+            padding: 12px 18px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .offcanvas-body .navbar-nav .nav-link:hover {
+            background-color: #455a64; /* Slightly lighter grey on hover */
+            color: #fff !important;
+        }
+
+        .offcanvas-body .navbar-nav details {
+            background-color: #37474f; /* Cool grey background for details */
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #546e7a; /* Subtle border */
+        }
+
+        .offcanvas-body .navbar-nav summary {
+            color: #cfd8dc !important; /* Light grey summary text */
+            padding: 14px 20px;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .offcanvas-body .navbar-nav summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .offcanvas-body .navbar-nav summary::after {
+            content: '▾'; /* Down arrow for open/close */
+            font-size: 1em;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .offcanvas-body .navbar-nav details[open] > summary::after {
+            transform: rotate(180deg);
+        }
+
+        .offcanvas-body .navbar-nav summary:hover {
+            background-color: #455a64;
+            color: #fff !important;
+        }
+
+        .offcanvas-body .navbar-nav .section-container {
+            background-color: #455a64; /* Slightly lighter grey for section content */
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .offcanvas-body .navbar-nav .section-container h3 {
+            color: #eceff1;
+            font-size: 1.3em;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #546e7a;
+            padding-bottom: 8px;
+        }
+
+        .offcanvas-body .navbar-nav .section-container p,
+        .offcanvas-body .navbar-nav .section-container strong,
+        .offcanvas-body .navbar-nav .section-container label {
+            color: #b0bec5;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .offcanvas-body .navbar-nav .section-container input[type="number"],
+        .offcanvas-body .navbar-nav .section-container input[type="text"],
+        .offcanvas-body .navbar-nav .section-container input[type="file"] {
+            background-color: #37474f;
+            border: 1px solid #546e7a;
+            color: #eceff1;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 8px 0;
+            font-size: 0.9em;
+        }
+
+        .offcanvas-body .navbar-nav .section-container input:focus {
+            outline: none;
+            border-color: #00bfa5;
+            box-shadow: 0 0 5px rgba(0, 191, 165, 0.5);
+        }
+
+        .offcanvas-body .navbar-nav .section-container button {
+            background-color: #2e7d32; /* Pleasant green */
+            color: #f0f8ea;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 18px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 12px;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .offcanvas-body .navbar-nav .section-container button:hover {
+            background-color: #1b5e20;
+            transform: scale(1.02);
+        }
+
+        .offcanvas-body .navbar-nav #searchInput {
+            background-color: #37474f;
+            border: 1px solid #546e7a;
+            color: #eceff1;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        .offcanvas-body button { /* Logout button style */
+            background-color: #d32f2f; /* Pleasant red */
+            color: #ffebee;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 18px;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .offcanvas-body button:hover {
+            background-color: #b71c1c; /* Darker red on hover */
+            transform: scale(1.02);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow */
+        }
+
+        th,
+        td {
+            border: 1px solid #455a64;
+            text-align: left;
+            padding: 12px 15px;
+            font-size: 0.9em;
+        }
+
+        th {
+            background-color: #37474f;
+            color: #eceff1;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #263238;
+        }
+
+        .detail-row td {
+            background-color: #1c1c1c;
+            color: #90a4ae;
+        }
+
+        .table-wrapper-horizontal {
+            overflow-x: auto; /* Enable horizontal scrollbar when content overflows */
+            margin-top: 10px; /* Add some space above the table */
+            border: 1px solid #555; /* Optional: Add a border to the scrollable area */
+            border-radius: 8px;
+        }
+
+        .horizontal-table {
+            width: auto; /* Important: Let the table width expand based on content */
+            border-collapse: collapse;
+            margin-bottom: 10px; /* Add some space below the table */
+        }
+
+        .horizontal-table th,
+        .horizontal-table td {
+            border: 1px solid #455a64; /* Use your theme's border color */
+            text-align: left;
+            padding: 12px 15px;
+            white-space: nowrap; /* Prevent text wrapping, forcing horizontal overflow */
+            font-size: 0.9em;
+        }
+
+        .horizontal-table th {
+            background-color: #37474f; /* Use your theme's header background */
+            color: #eceff1; /* Use your theme's header text color */
+            font-weight: bold;
+        }
+
+        .horizontal-table tr:nth-child(even) {
+            background-color: #263238; /* Use your theme's even row background */
+        }
+
+        /* Optional: Style the scrollbar for WebKit browsers (Chrome, Safari) */
+        .table-wrapper-horizontal::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-wrapper-horizontal::-webkit-scrollbar-thumb {
+            background-color: #666;
+            border-radius: 4px;
+        }
+
+        .table-wrapper-horizontal::-webkit-scrollbar-thumb:hover {
+            background-color: #888;
+        }
+
+        /* Optional: Style the scrollbar for Firefox */
+        .table-wrapper-horizontal {
+            scrollbar-width: thin;
+            scrollbar-color: #666 #333;
+        }
+
+        /* NEW: Styles for the in-page "Balance Added" popup */
+        #balanceAddedOnPagePopup {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stays in place relative to the viewport */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Centers the popup */
+            background-color: rgba(33, 150, 243, 0.95); /* A slightly darker blue with more opacity */
+            color: #fff;
+            padding: 25px 35px; /* More generous padding */
+            border-radius: 12px; /* More rounded corners */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em; /* Slightly larger text */
+            z-index: 2000; /* Higher than offcanvas */
+            max-width: 350px; /* Max width for responsiveness */
+            animation: fadeIn 0.3s ease-out; /* Smooth fade-in */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        #balanceAddedOnPagePopup.hidden {
+            animation: fadeOut 0.5s ease-out forwards; /* Smooth fade-out */
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <div class="wallet" id="wallet">Wallet: ₹500<br><small>(Winning: ₹0 | Remaining: ₹500)</small></div>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasDarkNavbar" aria-labelledby="offcanvasDarkNavbarLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item w-100">
+                            <details>
+                                <summary class="nav-link">profile details</summary>
+                                <div class="section" id="profileDetailsSection">
+                                    <div class="section-container">
+                                        <p><strong>Username:</strong> Sandeep</p>
+                                        <p><strong>Phone:</strong> 7993800177</p>
+                                        <p><strong>Email:</strong> sandy939876@gmail.com</p>
+                                    </div>
+                                </div>
+                            </details>
+                        </li>
+
+                        <li class="nav-item w-100">
+                            <details>
+                                <summary class="nav-link">Add Balance</summary>
+                                <div class="section" id="addBalanceSection">
+                                    <div class="section-container">
+                                        <h3>Add Balance</h3>
+                                        <strong>Current Wallet Balance: ₹<span id="walletBalanceAdd">1000</span></strong>
+                                        <div id="addBalanceSuccessMessage">Balance added successfully!</div>
+                                        <div id="addBalanceErrorMessage"></div>
+                                        <form id="addBalanceForm">
+                                            <label>Amount:</label>
+                                            <input type="number" id="addAmount" placeholder="Enter amount to add" min="1" required />
+
+                                            <label>Upload Screenshot (.jpg):</label>
+                                            <input type="file" id="screenshotUpload" accept=".jpg,.jpeg" required>
+                                            <button type="submit" id="addBalanceBtn">Request Add Balance</button>
+                                        </form>
+                                        <div id="qrCodeContainer">
+                                            <p>Scan this QR to pay:</p>
+                                            <img src="https://via.placeholder.com/150x150.png?text=QR+Code" alt="QR Code for payment" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </li>
+
+                        <li class="nav-item">
+                            <details>
+                                <summary class="nav-link">Withdraw</summary>
+                                <div class="section" id="withdrawSection">
+                                    <div class="section-container">
+                                        <h3>Withdraw</h3>
+                                        <strong>Current Wallet Balance: ₹<span id="walletBalanceWithdraw">500</span></strong><br>
+                                        <strong>Winning Balance: ₹<span id="winningBalance">0</span></strong>
+
+                                        <div id="popupMessageWithdraw">Withdrawals will be processed within 10 minutes to 24 hours.</div>
+                                        <div id="withdrawSuccessMessage">Withdrawal request submitted successfully.</div>
+                                        <div id="withdrawErrorMessage"></div>
+                                        <form id="withdrawForm">
+                                            <label>Account Holder Name:</label>
+                                            <input type="text" id="accountHolder" maxlength="36" required>
+                                            <label>Account Number:</label>
+                                            <input type="text" id="accountNumber" pattern="^\d{9,18}$" required>
+                                            <label>IFSC Code:</label>
+                                            <input type="text" id="ifscCode" pattern="^[A-Za-z]{4}\d{7}$" required>
+                                            <label>Amount:</label>
+                                            <input type="number" id="withdrawAmount" min="100" required>
+                                            <button type="submit">Request Withdrawal</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </details>
+                        </li>
+                       <li class="nav-item w-100">
+                            <details>
+                                <summary class="nav-link">Transaction History</summary>
+                                <div class="section" id="transactionHistorySection">
+                                    <div class="section-container">
+                                        <h3>Transaction History</h3>
+                                        <input type="text" id="searchInput" onkeyup="searchTransactions()" placeholder="Search...">
+                                        <div class="table-wrapper-horizontal">
+                                            <table id="transactionTable" class="horizontal-table">
+                                                <thead id="transactionTableHeader">
+                                                    <tr>
+                                                        <th>Transaction ID</th>
+                                                        <th>Type</th>
+                                                        <th>Amount</th>
+                                                        <th>Balance</th>
+                                                        <th>Status</th>
+                                                        <th>Action</th>
+                                                        <th>Reason</th> <!-- Added Reason column -->
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="transactionTableBody">
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </li>
+                        <!-- Removed Admin Deposit Approvals section from UI, but logic remains internally -->
+                        <li class="nav-item">
+                            <button onclick="logout()">Logout</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container">
+        <div class="game-box">
+            <h1>🪙 COIN KING</h1>
+            <div class="coin">
+                <div class="coin-inner" id="coinInner">
+                    <div class="side king">KING</div>
+                    <div class="side queen">QUEEN</div>
+                </div>
+            </div>
+
+            <div id="result">Result: </div>
+
+            <div class="controls">
+                <div id="game-status" style="margin-top: 15px; font-weight: bold; font-size: 1.1em;">
+                    <p id="gamePhaseDisplay">Phase: Loading...</p>
+                    <p id="gameTimerDisplay">Time Left: --s</p>
+                </div>
+
+                <div class="bet-controls">
+                    <button onclick="changeBet(-10)">−</button>
+                    <input type="text" id="bet" value="100" />
+                    <button onclick="changeBet(10)">+</button>
+                </div>
+                <div>
+                    <button class="side-btn" id="btnKing" onclick="selectSide('KING')">KING</button>
+                    <button class="side-btn" id="btnQueen" onclick="selectSide('QUEEN')">QUEEN</button>
+                </div>
+                <button class="start-btn" onclick="placeBet()" id="startButton">PLACE BET</button>
+            </div>
+
+            <div class="history">
+                <h3>History</h3>
+                <ul id="historyList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="balanceAddedOnPagePopup">
+        Balance added successfully! Please wait 10-30 minutes for processing.
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+    <script>
+        // Global variables for game and wallet balances
+        let totalBalance = 500; // Initial balance for the game
+        let winningBalance = 0; // Initial winning balance
+        let remainingBalance = 500; // Initial remaining balance (total - winning)
+
+        // All transactions will be stored here
+        let transactions = []; // Array of { id, type, amount, currentBalance, status, date, time, reason }
+
+        // Variables for daily limits (kept for context, actual logic will be inside functions)
+        let dailyAddedAmount = 0;
+        let lastAddDate = new Date().toDateString();
+
+        let dailyWithdrawAmount = 0;
+        let withdrawCountToday = 0;
+        let lastWithdrawDate = new Date().toDateString();
+
+        // --- Game Cycle Timing ---
+        let gameInterval; // Holds the setInterval ID for the main game loop
+        let currentPhase = 'initial_cooldown'; // Start in a state before first betting
+        let timeRemainingInPhase = 0; // Seconds left in current phase
+
+        const BETTING_DURATION_SECONDS = 10;
+        const RESULT_DISPLAY_DURATION_SECONDS = 10;
+        const POST_RESULT_COOLDOWN_SECONDS = 25; // 45 - 10 - 10 = 25
+
+        // --- Game State Variables for current round's bet ---
+        let playerBetAmount = 0; // Stores the bet amount for the current round
+        let playerSelectedSide = null; // Stores the side selected for the current round
+        let roundOutcome = null; // Stores the result of the current flip ('KING' or 'QUEEN')
+        let playerBetPlacedInRound = false; // Flag to check if current player bet in the round
+
+        // --- DOM Elements for the new timer ---
+        const gameTimerDisplay = document.getElementById('gameTimerDisplay');
+        const gamePhaseDisplay = document.getElementById('gamePhaseDisplay');
+
+        // Function to update the main wallet display at the top-left
+        function updateWalletDisplay(extra = '', cssClass = '') {
+            const wallet = document.getElementById('wallet');
+            wallet.className = 'wallet ' + cssClass;
+            remainingBalance = totalBalance - winningBalance; // Ensure remainingBalance is always totalBalance - winningBalance
+
+            wallet.innerHTML = `${extra ? extra + ' → ' : ''}Wallet: ₹${totalBalance}
+                <br><small>(Winning: ₹${winningBalance} | Remaining: ₹${remainingBalance})</small>`;
+
+            if (extra) {
+                setTimeout(() => {
+                    wallet.className = 'wallet';
+                    wallet.innerHTML = `Wallet: ₹${totalBalance}
+                        <br><small>(Winning: ₹${winningBalance} | Remaining: ₹${remainingBalance})</small>`;
+                }, 2000); // Reset class after 2 seconds
+            }
+            // Crucially, update the offcanvas balances as well
+            updateBalanceDisplaysInOffcanvas();
+        }
+
+        // Function to update the balances displayed within the offcanvas menu
+        function updateBalanceDisplaysInOffcanvas() {
+            document.getElementById("walletBalanceAdd").textContent = totalBalance;
+            document.getElementById("walletBalanceWithdraw").textContent = totalBalance;
+            document.getElementById("winningBalance").textContent = winningBalance;
+        }
+
+        // Function to generate a unique transaction ID
+        function generateTransactionId() {
+            return 'TXN' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        }
+
+        // Function to render all transactions in the history table
+        function renderTransactionHistory() {
+            const tbody = document.getElementById("transactionTableBody");
+            tbody.innerHTML = ''; // Clear existing rows
+
+            // Display transactions in reverse chronological order
+            [...transactions].reverse().forEach(tx => {
+                const statusColor = { Success: "#00ff99", Pending: "#ff9800", Failed: "#ff6666" }[tx.status] || "#b0bec5";
+
+                const row = document.createElement("tr");
+                row.setAttribute('data-transaction-id', tx.id); // Add data attribute for easier lookup
+                row.innerHTML = `
+                    <td>${tx.id}</td>
+                    <td>${tx.type}</td>
+                    <td>₹${tx.amount}</td>
+                    <td>₹${tx.currentBalance}</td>
+                    <td><span style="color: ${statusColor};"><strong>${tx.status}</strong></span></td>
+                    <td><button onclick="toggleDetails(this)">▼</button></td>
+                    <td>${tx.reason || ''}</td>`; // Display the reason
+
+                const detailRow = document.createElement("tr");
+                detailRow.classList.add("detail-row");
+                detailRow.style.display = "none"; // Initially hidden
+                detailRow.innerHTML = `<td colspan="7"><strong>Date:</strong> ${tx.date} &nbsp; <strong>Time:</strong> ${tx.time}</td>`;
+
+                tbody.appendChild(row);
+                tbody.appendChild(detailRow);
+            });
+        }
+
+
+        // Function to toggle the visibility of transaction details
+        function toggleDetails(button) {
+            const detailRow = button.closest("tr").nextElementSibling;
+            if (detailRow && detailRow.classList.contains("detail-row")) {
+                detailRow.style.display = detailRow.style.display === "none" ? "table-row" : "none";
+                button.textContent = detailRow.style.display === "none" ? "▼" : "▲";
+            }
+        }
+
+        // Function to search transactions in the table
+        function searchTransactions() {
+            const input = document.getElementById("searchInput");
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById("transactionTable");
+            const tr = table.getElementsByTagName("tr");
+
+            for (let i = 0; i < tr.length; i++) {
+                // Skip detail rows when iterating for search, but ensure their visibility is handled by parent row
+                if (tr[i].classList.contains("detail-row")) {
+                    continue;
+                }
+                let found = false;
+                const tds = tr[i].getElementsByTagName("td");
+                for (let j = 0; j < tds.length - 1; j++) { // Exclude the action button column
+                    const td = tds[j];
+                    if (td) {
+                        if (td.textContent.toUpperCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                // Show or hide the row and its associated detail row
+                if (found) {
+                    tr[i].style.display = "";
+                    // If there's a detail row immediately following, make sure it's also shown if its parent is shown
+                    if (tr[i].nextElementSibling && tr[i].nextElementSibling.classList.contains("detail-row")) {
+                        // Don't change its display here, toggleDetails handles it
+                    }
+                } else {
+                    tr[i].style.display = "none";
+                    // Also hide the associated detail row if the main row is hidden
+                    if (tr[i].nextElementSibling && tr[i].nextElementSibling.classList.contains("detail-row")) {
+                        tr[i].nextElementSibling.style.display = "none";
+                    }
+                }
+            }
+        }
+
+        // Game Logic
+        let betInput = document.getElementById('bet');
+        let resultDisplay = document.getElementById('result');
+        let coinInner = document.getElementById('coinInner');
+        let historyList = document.getElementById('historyList');
+        let selectedSide = null; // This is the user's selected side for the current bet
+        let startButton = document.getElementById('startButton');
+        let btnKing = document.getElementById('btnKing');
+        let btnQueen = document.getElementById('btnQueen');
+
+        // Simulated bets for the current round
+        let currentRoundAllBets = { KING: [], QUEEN: [] };
+
+        function changeBet(amount) {
+            let currentBet = parseInt(betInput.value);
+            let newBet = currentBet + amount;
+            if (newBet < 10) newBet = 10;
+            betInput.value = newBet;
+        }
+
+        function selectSide(side) {
+            selectedSide = side;
+            btnKing.classList.remove('selected');
+            btnQueen.classList.remove('selected');
+            if (side === 'KING') {
+                btnKing.classList.add('selected');
+            } else {
+                btnQueen.classList.add('selected');
+            }
+        }
+
+        // Function to reset the coin to a default state (KING side up)
+        function resetCoin() {
+            coinInner.style.transform = 'rotateY(0deg)';
+            coinInner.classList.remove('spin');
+        }
+
+        function placeBet() {
+            if (currentPhase !== 'betting') {
+                resultDisplay.textContent = `Please wait for the betting phase to begin.`;
+                resultDisplay.style.display = 'block';
+                resultDisplay.style.color = '#ff9800'; // Orange for warning
+                setTimeout(() => resultDisplay.style.display = 'none', 3000);
+                return;
+            }
+
+            playerBetAmount = parseInt(betInput.value);
+            if (playerBetAmount <= 0 || isNaN(playerBetAmount)) {
+                resultDisplay.textContent = 'Please enter a valid bet amount.';
+                resultDisplay.style.display = 'block';
+                resultDisplay.style.color = '#ff6666'; // Red for error
+                setTimeout(() => resultDisplay.style.display = 'none', 3000);
+                return;
+            }
+
+            if (selectedSide === null) {
+                resultDisplay.textContent = 'Please select KING or QUEEN.';
+                resultDisplay.style.display = 'block';
+                resultDisplay.style.color = '#ff6666';
+                setTimeout(() => resultDisplay.style.display = 'none', 3000);
+                return;
+            }
+
+            if (playerBetAmount > totalBalance) { // Check against totalBalance as it's the playable balance
+                resultDisplay.textContent = 'Insufficient balance.';
+                resultDisplay.style.display = 'block';
+                resultDisplay.style.color = '#ff6666';
+                setTimeout(() => resultDisplay.style.display = 'none', 3000);
+                return;
+            }
+
+            // Deduct bet immediately for game bets
+            totalBalance -= playerBetAmount;
+            remainingBalance = totalBalance - winningBalance; // Update remaining balance (important)
+            updateWalletDisplay(`Bet: ₹${playerBetAmount}`);
+            startButton.disabled = true; // Disable betting until next round
+            betInput.disabled = true;
+            btnKing.disabled = true;
+            btnQueen.disabled = true;
+
+            resultDisplay.textContent = `Bet of ₹${playerBetAmount} on ${selectedSide} placed!`;
+            resultDisplay.style.display = 'block';
+            resultDisplay.style.color = '#00c897'; // Green for success
+            setTimeout(() => resultDisplay.style.display = 'none', 3000);
+
+            // Store the player's chosen side and amount for this round's processing
+            playerSelectedSide = selectedSide;
+            playerBetPlacedInRound = true; // Mark that player has bet this round
+
+            // Add player's bet to the current round's bets
+            currentRoundAllBets[selectedSide].push({ amount: playerBetAmount, isPlayer: true });
+        }
+
+        // Function to generate random simulated bets for a round
+        function generateSimulatedBets() {
+            const numSimulatedUsers = Math.floor(Math.random() * 5) + 3; // 3 to 7 simulated users
+            for (let i = 0; i < numSimulatedUsers; i++) {
+                const simulatedAmount = (Math.floor(Math.random() * 10) + 1) * 100; // Random bet in multiples of 100 (100-1000)
+                const simulatedSide = Math.random() < 0.5 ? 'KING' : 'QUEEN';
+                currentRoundAllBets[simulatedSide].push({ amount: simulatedAmount, isPlayer: false });
+            }
+        }
+
+
+        function animateCoinFlip(result) {
+            resetCoin(); // Ensure coin starts from KING side
+            coinInner.classList.add('spin');
+
+            coinInner.style.animationIterationCount = 'infinite'; // Keep spinning until we stop it
+            coinInner.style.animationPlayState = 'running';
+
+            setTimeout(() => {
+                coinInner.style.animationPlayState = 'paused'; // Pause the animation
+                coinInner.classList.remove('spin'); // Remove the spin class
+
+                if (result === 'KING') {
+                    coinInner.style.transform = 'rotateY(0deg)'; // King side up
+                } else {
+                    coinInner.style.transform = 'rotateY(180deg)'; // Queen side up
+                }
+
+                // Controls will be re-enabled by the game loop's phase transition
+            }, (BETTING_DURATION_SECONDS + 2) * 1000); // Stop animation slightly after betting phase ends
+        }
+
+        function showResult() {
+            // Generate simulated bets at the point of showing result
+            generateSimulatedBets();
+
+            let totalKingBets = currentRoundAllBets.KING.reduce((sum, bet) => sum + bet.amount, 0);
+            let totalQueenBets = currentRoundAllBets.QUEEN.reduce((sum, bet) => sum + bet.amount, 0);
+
+            let winningSide;
+            let reasonDetail = `King Total: ₹${totalKingBets}, Queen Total: ₹${totalQueenBets}. `;
+
+            if (totalKingBets < totalQueenBets) {
+                winningSide = 'KING';
+                reasonDetail += `King had the lowest total bet.`;
+            } else if (totalQueenBets < totalKingBets) {
+                winningSide = 'QUEEN';
+                reasonDetail += `Queen had the lowest total bet.`;
+            } else {
+                // If totals are equal, choose randomly
+                winningSide = Math.random() < 0.5 ? 'KING' : 'QUEEN';
+                reasonDetail += `Total bets were equal. Winner chosen randomly as ${winningSide}.`;
+            }
+
+            roundOutcome = winningSide; // Store the outcome for history
+            animateCoinFlip(winningSide); // Animate coin to show the determined winning side
+
+            const now = new Date();
+            const txId = generateTransactionId();
+            const date = now.toLocaleDateString();
+            const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            if (playerBetPlacedInRound) { // Only process if player actually placed a bet in this round
+                if (playerSelectedSide === winningSide) {
+                    const winnings = playerBetAmount * 2;
+                    winningBalance += winnings;
+                    totalBalance += winnings;
+                    resultDisplay.textContent = `You Won! It's ${winningSide}. You gained ₹${winnings}`;
+                    resultDisplay.style.color = '#00ff99';
+                    updateWalletDisplay('WIN', 'win');
+                    transactions.unshift({
+                        id: txId,
+                        type: 'Game Win',
+                        amount: winnings,
+                        currentBalance: totalBalance,
+                        status: 'Success',
+                        date: date,
+                        time: time,
+                        reason: '' // Reason is blank for game wins/losses
+                    });
+                } else {
+                    resultDisplay.textContent = `You Lost! It's ${winningSide}. You lost ₹${playerBetAmount}`;
+                    resultDisplay.style.color = '#ff6666';
+                    updateWalletDisplay('LOSS', 'lose');
+                    transactions.unshift({
+                        id: txId,
+                        type: 'Game Loss',
+                        amount: playerBetAmount,
+                        currentBalance: totalBalance,
+                        status: 'Success',
+                        date: date,
+                        time: time,
+                        reason: '' // Reason is blank for game wins/losses
+                    });
+                }
+            } else {
+                resultDisplay.textContent = `It's ${winningSide}. No bet placed this round.`;
+                resultDisplay.style.color = '#FFD700';
+                updateWalletDisplay(); // Just update without win/loss animation
+                transactions.unshift({
+                    id: txId,
+                    type: 'Game Result',
+                    amount: 0,
+                    currentBalance: totalBalance,
+                    status: 'Success',
+                    date: date,
+                    time: time,
+                    reason: `No bet placed.` // This reason explicitly states no bet was placed by the user
+                });
+            }
+
+            resultDisplay.style.display = 'block';
+
+            // Reset bet for next round
+            playerBetAmount = 0;
+            playerSelectedSide = null;
+            playerBetPlacedInRound = false; // Reset flag for next round
+            selectedSide = null; // Also reset the local selectedSide
+            btnKing.classList.remove('selected');
+            btnQueen.classList.remove('selected');
+            currentRoundAllBets = { KING: [], QUEEN: [] }; // Reset all bets for the new round
+
+            // Re-render history table
+            renderTransactionHistory();
+            
+            setTimeout(() => {
+                resultDisplay.style.display = 'none';
+            }, RESULT_DISPLAY_DURATION_SECONDS * 1000);
+        }
+
+        function startGameCycle() {
+            // Initialize the first phase
+            if (currentPhase === 'initial_cooldown') {
+                currentPhase = 'betting';
+                timeRemainingInPhase = BETTING_DURATION_SECONDS;
+            }
+
+            gameInterval = setInterval(() => {
+                timeRemainingInPhase--;
+
+                if (timeRemainingInPhase <= 0) {
+                    if (currentPhase === 'betting') {
+                        gamePhaseDisplay.textContent = 'Phase: Result';
+                        timeRemainingInPhase = RESULT_DISPLAY_DURATION_SECONDS;
+                        showResult(); // Show the coin flip result
+                        currentPhase = 'result_display';
+                        // Disable betting controls immediately after betting phase ends
+                        startButton.disabled = true;
+                        betInput.disabled = true;
+                        btnKing.disabled = true;
+                        btnQueen.disabled = true;
+                    } else if (currentPhase === 'result_display') {
+                        gamePhaseDisplay.textContent = 'Phase: Cooldown';
+                        timeRemainingInPhase = POST_RESULT_COOLDOWN_SECONDS;
+                        currentPhase = 'cooldown';
+                        // Ensure result display is hidden after its duration
+                        resultDisplay.style.display = 'none';
+                    } else if (currentPhase === 'cooldown') {
+                        gamePhaseDisplay.textContent = 'Phase: Betting';
+                        timeRemainingInPhase = BETTING_DURATION_SECONDS;
+                        currentPhase = 'betting';
+                        resetCoin(); // Reset coin visually for the new betting round
+                        // Re-enable betting controls for the new betting phase
+                        startButton.disabled = false;
+                        betInput.disabled = false;
+                        btnKing.disabled = false;
+                        btnQueen.disabled = false;
+                    }
+                }
+                gameTimerDisplay.textContent = `Time Left: ${timeRemainingInPhase}s`;
+            }, 1000);
+        }
+
+        // --- Add Balance Form Logic ---
+        document.getElementById('addBalanceForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const addAmountInput = document.getElementById('addAmount');
+            const screenshotUpload = document.getElementById('screenshotUpload');
+            const amountToAdd = parseInt(addAmountInput.value);
+
+            const addSuccessMessage = document.getElementById('addBalanceSuccessMessage');
+            const addErrorMessage = document.getElementById('addBalanceErrorMessage');
+
+            addSuccessMessage.style.display = 'none';
+            addErrorMessage.style.display = 'none';
+            addErrorMessage.textContent = '';
+
+            // Check for daily limits
+            const today = new Date().toDateString();
+            if (lastAddDate !== today) {
+                dailyAddedAmount = 0; // Reset daily limit if it's a new day
+                lastAddDate = today;
+            }
+
+            const MAX_DAILY_ADD_AMOUNT = 5000; // Example limit
+
+            if (amountToAdd <= 0 || isNaN(amountToAdd)) {
+                addErrorMessage.textContent = 'Please enter a valid amount.';
+                addErrorMessage.style.display = 'block';
+                return;
+            }
+
+            if ((dailyAddedAmount + amountToAdd) > MAX_DAILY_ADD_AMOUNT) {
+                addErrorMessage.textContent = `Daily add limit exceeded. You can add up to ₹${MAX_DAILY_ADD_AMOUNT - dailyAddedAmount} more today.`;
+                addErrorMessage.style.display = 'block';
+                return;
+            }
+
+            if (screenshotUpload.files.length === 0) {
+                addErrorMessage.textContent = 'Please upload a screenshot of your payment.';
+                addErrorMessage.style.display = 'block';
+                return;
+            }
+
+            // Simulate successful submission - DO NOT update balance directly
+            console.log(`Adding ₹${amountToAdd}. Screenshot: ${screenshotUpload.files[0].name}. Request sent for approval.`);
+
+            dailyAddedAmount += amountToAdd; // Track for client-side daily limit
+
+            const now = new Date();
+            const txId = generateTransactionId();
+            transactions.unshift({ // Add to the beginning of the array
+                id: txId,
+                type: 'Deposit',
+                amount: amountToAdd,
+                currentBalance: totalBalance, // Balance before this deposit is approved
+                status: 'Pending',
+                date: now.toLocaleDateString(),
+                time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                reason: '' // Reason is blank for pending
+            });
+            renderTransactionHistory(); // Re-render history to show the pending request
+
+            // Show the success message within the offcanvas
+            addSuccessMessage.textContent = "Balance add request submitted! Please wait 10-30 minutes for processing.";
+            addSuccessMessage.style.display = "block";
+
+            // Show the on-page popup (briefly)
+            showBalanceAddedPopup(amountToAdd);
+
+            addAmountInput.value = ''; // Clear input
+            screenshotUpload.value = ''; // Clear file input
+        });
+
+        // Function to show the in-page balance added popup
+        function showBalanceAddedPopup(amount) {
+            const popup = document.getElementById('balanceAddedOnPagePopup');
+            popup.textContent = `Deposit request for ₹${amount} submitted.`;
+            popup.classList.remove('hidden');
+            popup.style.display = 'block';
+
+            setTimeout(() => {
+                popup.classList.add('hidden');
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                }, 500); // Wait for fadeOut animation to complete
+            }, 5000); // Display for 5 seconds
+        }
+
+        // --- Withdraw Form Logic ---
+        document.getElementById('withdrawForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const accountHolder = document.getElementById('accountHolder').value;
+            const accountNumber = document.getElementById('accountNumber').value;
+            const ifscCode = document.getElementById('ifscCode').value;
+            const withdrawAmountInput = document.getElementById('withdrawAmount');
+            const amountToWithdraw = parseInt(withdrawAmountInput.value);
+
+            const withdrawSuccessMessage = document.getElementById('withdrawSuccessMessage');
+            const withdrawErrorMessage = document.getElementById('withdrawErrorMessage');
+            const popupMessageWithdraw = document.getElementById('popupMessageWithdraw');
+
+            withdrawSuccessMessage.style.display = 'none';
+            withdrawErrorMessage.style.display = 'none';
+            withdrawErrorMessage.textContent = '';
+            popupMessageWithdraw.style.display = 'block'; // Always show general withdrawal info (this message is for user info)
+
+            // Check daily limits for withdrawal
+            const today = new Date().toDateString();
+            if (lastWithdrawDate !== today) {
+                dailyWithdrawAmount = 0; // Reset daily limit if new day
+                withdrawCountToday = 0;
+                lastWithdrawDate = today;
+            }
+
+            const MAX_DAILY_WITHDRAW_AMOUNT = 10000; // Example limit
+            const MAX_DAILY_WITHDRAW_COUNT = 3; // Example limit
+
+            if (amountToWithdraw <= 0 || isNaN(amountToWithdraw)) {
+                withdrawErrorMessage.textContent = 'Please enter a valid amount.';
+                withdrawErrorMessage.style.display = 'block';
+                return;
+            }
+            if (amountToWithdraw < 100) {
+                withdrawErrorMessage.textContent = 'Minimum withdrawal amount is ₹100.';
+                withdrawErrorMessage.style.display = 'block';
+                return;
+            }
+
+            if (amountToWithdraw > winningBalance) {
+                withdrawErrorMessage.textContent = 'Withdrawal amount cannot exceed your winning balance.';
+                withdrawErrorMessage.style.display = 'block';
+                return;
+            }
+
+            if (amountToWithdraw > totalBalance) { // This check is mostly redundant due to winningBalance check but good for safety
+                withdrawErrorMessage.textContent = 'Withdrawal amount cannot exceed your total balance.';
+                withdrawErrorMessage.style.display = 'block';
+                return;
+            }
+
+            if (withdrawCountToday >= MAX_DAILY_WITHDRAW_COUNT) {
+                withdrawErrorMessage.textContent = `Daily withdrawal count limit of ${MAX_DAILY_WITHDRAW_COUNT} exceeded.`;
+                withdrawErrorMessage.style.display = 'block';
+                return;
+            }
+
+            if ((dailyWithdrawAmount + amountToWithdraw) > MAX_DAILY_WITHDRAW_AMOUNT) {
+                withdrawErrorMessage.textContent = `Daily withdrawal limit of ₹${MAX_DAILY_WITHDRAW_AMOUNT} exceeded.`;
+                withdrawErrorMessage.style.display = 'block';
+                return;
+            }
+
+            // Funds are deducted immediately for withdrawal requests in this simulation
+            totalBalance -= amountToWithdraw;
+            winningBalance -= amountToWithdraw;
+
+            // Ensure winningBalance doesn't go negative (already handled by the check above, but good for safety)
+            if (winningBalance < 0) {
+                winningBalance = 0;
+            }
+
+            dailyWithdrawAmount += amountToWithdraw;
+            withdrawCountToday++;
+
+            updateWalletDisplay();
+            updateBalanceDisplaysInOffcanvas();
+
+            // Add transaction to history as Pending. Admin would later change status to Approved/Failed.
+            const now = new Date();
+            transactions.unshift({
+                id: generateTransactionId(),
+                type: 'Withdrawal',
+                amount: amountToWithdraw,
+                currentBalance: totalBalance, // Balance after initiating withdrawal
+                status: 'Pending',
+                date: now.toLocaleDateString(),
+                time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                reason: 'Withdrawal request submitted, pending admin review.'
+            });
+            renderTransactionHistory();
+
+            withdrawSuccessMessage.textContent = "Withdrawal request submitted successfully. Funds deducted. Pending processing.";
+            withdrawSuccessMessage.style.display = "block";
+
+            // Clear form fields
+            document.getElementById('accountHolder').value = '';
+            document.getElementById('accountNumber').value = '';
+            document.getElementById('ifscCode').value = '';
+            withdrawAmountInput.value = '';
+
+            setTimeout(() => {
+                withdrawSuccessMessage.style.display = "none";
+                popupMessageWithdraw.style.display = "none";
+            }, 5000);
+        });
+
+        // --- Admin Approval Simulation Functions (Internal - not exposed in UI) ---
+        // These functions would be triggered by an actual backend/admin system.
+        // For local simulation, you can call them from the browser's console.
+
+        /**
+         * Simulates admin approving a deposit transaction.
+         * @param {string} transactionId The ID of the transaction to approve.
+         * @param {number} amount The amount to add to the balance (should match original request).
+         */
+        function approveDeposit(transactionId, amount) {
+            const txIndex = transactions.findIndex(tx => tx.id === transactionId);
+            if (txIndex > -1) {
+                const tx = transactions[txIndex];
+                if (tx.type === 'Deposit' && tx.status === 'Pending') {
+                    tx.status = 'Success';
+                    tx.reason = ''; // Reason is blank for success
+                    
+                    // Add the amount to the user's balance
+                    totalBalance += amount;
+                    winningBalance += amount; // Assuming deposits become winning/playable balance
+                    tx.currentBalance = totalBalance; // Update transaction's final balance
+
+                    updateWalletDisplay(`Deposit Approved: +₹${amount}`, 'win');
+                    renderTransactionHistory(); // Re-render history to reflect status change
+                    console.log(`Deposit ${transactionId} approved. Total Balance: ₹${totalBalance}`);
+                } else {
+                    console.warn(`Transaction ${transactionId} is not a pending deposit and cannot be approved.`);
+                }
+            } else {
+                console.error(`Transaction with ID ${transactionId} not found.`);
+            }
+        }
+
+        /**
+         * Simulates admin rejecting a transaction (deposit or withdrawal).
+         * @param {string} transactionId The ID of the transaction to reject.
+         * @param {string} providedReason The reason for rejection.
+         */
+        function rejectTransaction(transactionId, providedReason) {
+            const reason = providedReason;
+
+            if (reason === null || reason.trim() === '') {
+                alert('Please provide a reason for failure before marking the transaction as failed.'); // Client-side validation for admin
+                return;
+            }
+
+            const txIndex = transactions.findIndex(tx => tx.id === transactionId);
+            if (txIndex > -1) {
+                const tx = transactions[txIndex];
+                if (tx.status === 'Pending') {
+                    tx.status = 'Failed';
+                    tx.reason = reason.trim();
+                    // For deposits, balance remains unchanged as it was never added.
+                    // For withdrawals, balance was already deducted, but can be reversed if logic allows.
+                    // Here, we assume balance remains as it was after initial deduction for withdrawal.
+                    tx.currentBalance = totalBalance; // Reflect current totalBalance
+
+                    updateWalletDisplay(); // Just update to ensure consistency
+                    renderTransactionHistory(); // Re-render history to reflect status and reason
+                    console.log(`Transaction ${transactionId} rejected. Reason: ${reason}`);
+                } else {
+                    console.warn(`Transaction ${transactionId} is not pending and cannot be rejected.`);
+                }
+            } else {
+                console.error(`Transaction with ID ${transactionId} not found.`);
+            }
+        }
+
+
+        // Initial setup on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateWalletDisplay(); // Initialize wallet display
+            updateBalanceDisplaysInOffcanvas(); // Initialize offcanvas balances
+            renderTransactionHistory(); // Render any initial transactions (if loaded from storage)
+
+            // Start the main game loop that ticks every second
+            startGameCycle();
+        });
+
+        function logout() {
+            // In a real application, this would clear session data,
+            // revoke tokens, and redirect to a login page.
+            console.log("Logged out!");
+            // For this simulation, just reload the page to reset the state
+            location.reload();
+        }
+
+      // ✅ Fetch and display all add balance requests
+async function fetchData() {
+  try {
+    const res = await fetch("http://localhost:3000/api/admin/all");
+    const data = await res.json();
+    const tbody = document.getElementById("balanceTable");
+    tbody.innerHTML = "";
+
+    data.forEach((row, index) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${row.user_id}</td>
+        <td>₹${row.amount}</td>
+        <td>
+          <img src="/uploads/${row.screenshot}" style="max-width: 100px; border: 3px solid ${
+            row.status === "approved" ? "green" : row.status === "rejected" ? "red" : "gray"
+          };" />
+        </td>
+        <td>
+          <select 
+            id="status-${row.id}" 
+            onchange="updateSelectColor(this, ${row.id})" 
+            class="status-dropdown status-${row.status}" 
+            data-id="${row.id}"
+          >
+            <option value="pending" ${row.status === "pending" ? "selected" : ""}>Pending</option>
+            <option value="approved" ${row.status === "approved" ? "selected" : ""}>Approved</option>
+            <option value="rejected" ${row.status === "rejected" ? "selected" : ""}>Rejected</option>
+          </select>
+        </td>
+        <td>
+          <input 
+            type="text" 
+            id="comment-${row.id}" 
+            value="${row.comment || ''}" 
+            style="border: none; background: transparent; color: white; width: 100%;" 
+            readonly 
+          />
+        </td>
+        <td>${new Date(row.created_at).toLocaleString()}</td>
+        <td>
+          <button 
+            onclick="addBalance(${row.id}, '${row.user_id}')"
+            ${row.status !== "pending" ? "disabled style='background-color:lightgray;'" : ""}
+          >
+            Add Balance
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+
+      // Initialize dropdown color and comment text
+      updateSelectColor(document.getElementById(`status-${row.id}`), row.id, false);
+    });
+  } catch (err) {
+    console.error("❌ Failed to load balance requests:", err);
+  }
+}
+
+// ✅ Handle status dropdown change and comment autofill
+function updateSelectColor(select, id, shouldSave = true) {
+  const status = select.value;
+  select.className = `status-dropdown status-${status}`;
+
+  const commentInput = document.getElementById(`comment-${id}`);
+  if (!commentInput) return;
+
+  // Set default comment text
+  const comment =
+    status === "approved"
+      ? "Deposit Successfully Completed"
+      : status === "rejected"
+      ? "Payment Failed"
+      : "";
+
+  commentInput.value = comment;
+
+  // ✅ Send status/comment update to backend
+  if (shouldSave) {
+    fetch(`http://localhost:3000/api/admin/update-status/${id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status, comment }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success) {
+          alert("❌ Failed to update comment in database.");
+        }
+      })
+      .catch(err => {
+        console.error("❌ Error updating status/comment:", err);
+      });
+  }
+}
+
+// ✅ Handle "Add Balance" button click (only if status is approved)
+async function addBalance(addBalanceId, userId) {
+  const statusSelect = document.getElementById(`status-${addBalanceId}`);
+  const currentStatus = statusSelect.value;
+  const commentText = document.getElementById(`comment-${addBalanceId}`).value;
+
+  if (currentStatus !== "approved") {
+    alert("❌ Please change status to 'Approved' before adding balance.");
+    return;
+  }
+
+  const enteredAmount = prompt("Enter the amount to add to user's balance:");
+  const amount = parseFloat(enteredAmount);
+
+  if (isNaN(amount) || amount <= 0) {
+    alert("❌ Invalid amount. Please enter a positive number.");
+    return;
+  }
+
+  try {
+    // ✅ Step 1: Confirm status/comment update
+    const updateRes = await fetch(`http://localhost:3000/api/admin/update-status/${addBalanceId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: currentStatus, comment: commentText }),
+    });
+    const updateData = await updateRes.json();
+
+    if (!updateData.success) {
+      alert("❌ Failed to update status/comment before adding balance.");
+      return;
+    }
+
+    // ✅ Step 2: Send approval to backend
+    const res = await fetch(`http://localhost:3000/api/admin/approve/${addBalanceId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ comment: commentText, amount })
+    });
+
+    const result = await res.json();
+    if (!res.ok) {
+      alert(`❌ Error: ${result.message || "Failed to add balance"}`);
+    } else {
+      alert(result.message);
+      fetchData(); // Refresh table
+      if (typeof loadUserDetails === "function") loadUserDetails(); // Update wallet balance
+    }
+  } catch (err) {
+    console.error("❌ Error in addBalance:", err);
+    alert("Something went wrong while adding balance.");
+  }
+}
+
+// ✅ Load data on page ready
+document.addEventListener("DOMContentLoaded", fetchData);
+
+
+    </script>
+</body>
+</html>

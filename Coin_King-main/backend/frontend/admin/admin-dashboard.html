@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - Coin King</title>
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(120deg, #1f1c2c, #928DAB, #1CB5E0, #000046);
+  background-size: 300% 300%;
+  animation: gradientShift 20s ease infinite;
+  color: #ffffff;
+  margin: 0;
+  padding: 20px;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
+    h1 {
+      text-align: center;
+    }
+
+    .dashboard {
+      margin: 30px auto;
+      padding: 20px;
+      background: #2e2e3e;
+      border-radius: 8px;
+      max-width: 1200px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #3e3e5e;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #555;
+    }
+
+    th {
+      background-color: #444;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: crimson;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: darkred;
+    }
+
+    select {
+      padding: 6px;
+      border-radius: 5px;
+    }
+
+    select option[value="approved"] {
+      background-color: #008000;
+      color: #fff;
+    }
+
+    select option[value="rejected"] {
+      background-color: #cc0000;
+      color: #fff;
+    }
+
+    select option[value="pending"] {
+      background-color: #d4af37;
+      color: #000;
+    }
+
+    select.status-approved {
+      background-color: #008000;
+      color: #fff;
+    }
+
+    select.status-rejected {
+      background-color: #cc0000;
+      color: #fff;
+    }
+
+    select.status-pending {
+      background-color: #d4af37;
+      color: #000;
+    }
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #ff6600;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+
+    .search-container {
+      text-align: left;
+      margin: 10px 0;
+    }
+
+    .search-container input {
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .pagination {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .pagination button {
+      margin: 0 4px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      background: #555;
+      color: white;
+      border: none;
+    }
+
+    .pagination button.active {
+      background: #00bfff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>👑 Admin Dashboard</h1>
+<button class="logout-btn" onclick="window.location.href='admin-login.html'">Logout</button>
+  <div class="dashboard">
+    <div style="text-align:center; margin-bottom:20px;">
+      <button onclick="showSection('userSection')">User Details</button>
+      <button onclick="showSection('transactionSection')">Transaction Details</button>
+      <button onclick="showSection('addBalanceSection')">Add Balance Profile</button>
+      <button onclick="showSection('withdrawSection')">Withdraw Details</button>
+      <button onclick="showSection('adminWalletSection')">Admin Wallet</button>
+    </div>
+
+    <div id="userSection" class="section" style="display:none;">
+      <h2>User Details</h2>
+      <div class="search-bar">
+        <input type="text" id="userSearch" onkeyup="filterTable('userTableBody', 'userSearch')" placeholder="Search Users...">
+      </div>
+      <table id="userTable">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>UserId</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Password</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody id="userTableBody"></tbody>
+      </table>
+      <div class="pagination">
+        <button onclick="paginate('user', -1)">Previous</button>
+        <span id="userPageIndicator">Page 1</span>
+        <button onclick="paginate('user', 1)">Next</button>
+      </div>
+    </div>
+
+    <div id="transactionSection" class="section" style="display:none;">
+      <h2>🧾 Transaction Summary (Time-wise)</h2>
+      <div class="search-container">
+  <input type="text" id="transactionSearch" onkeyup="filterTable('summaryTable', 'transactionSearch')" placeholder="Search Transactions...">
+</div>
+      <table id="summaryTable">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Time</th>
+            <th>Users Played</th>
+            <th>King Bets</th>
+            <th>Queen Bets</th>
+            <th>Result</th>
+            <th>Profit</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="pagination" id="transactionPagination"></div>
+    </div>
+
+    <div id="addBalanceSection" class="section" style="display:none;">
+      <h2>Add Balance</h2>
+      <div class="search-container" style="margin-bottom: 10px;">
+    <input type="text" 
+           id="balanceSearch" 
+           placeholder="🔍 Search by User ID, Amount, Comment, Date..." 
+           style="padding: 8px; width: 300px; border-radius: 5px;" />
+  </div>
+      <table id="balanceRequestsTable">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>User ID</th>
+            <th>Amount</th>
+            <th>Transaction ID</th>
+            <th>Screenshot</th>
+            <th>Status</th>
+            <th>Comment</th>
+            <th>Date</th>
+            <th>Add Balance</th>
+          </tr>
+        </thead>
+        <tbody id="balanceTable"></tbody>
+      </table>
+      <div class="pagination" id="balancePagination"></div>
+    </div>
+<div id="imageModal" style="
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  display: none;
+">
+  <img id="modalImage"
+       src=""
+       style="max-width: 90%; max-height: 90%; border: 5px solid white; cursor: zoom-out;"
+       onclick="closeImageModal()" />
+</div>
+
+
+    <div id="withdrawSection" class="section" style="display:none;">
+      <h2>Withdraw Details</h2>
+       <div class="search-container">
+  <input type="text" id="withdrawSearch" onkeyup="filterTable('withdrawTableBody', 'withdrawSearch')" placeholder="Search Withdraw Requests...">
+</div>
+
+
+      <table id="withdrawTable">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>User ID</th>
+            <th>Amount</th>
+            <th>Account Number</th>
+            <th>IFSC Code</th>
+            <th>Status</th>
+            <th>Comment</th>
+            <th>Submit</th>
+          </tr>
+        </thead>
+        <tbody id="withdrawTableBody"></tbody>
+      </table>
+      <div class="pagination" id="withdrawPagination"></div>
+    </div>
+
+
+<div id="adminWalletSection" class="section" style="display: none;">
+  <div style="margin-bottom: 10px;">
+    <input
+  type="text"
+  id="walletSearch"
+  placeholder="Search by date"
+  oninput="liveWalletSearch()"   <!-- 🔁 live search on every keystroke -->
+
+
+  </div>
+
+  <h2>💰 Admin Wallet Summary</h2>
+   <h3 id="totalBalanceDisplay" style="color: #ffc107; font-size: 20px; margin-top: 10px;">
+    Loading total balance...
+  </h3>
+  <table>
+    <thead>
+      <tr>
+        <th>S.No</th>
+        <th>Date</th>
+        <th>Current Balance</th>
+        <th>Total Deposit</th>
+        <th>Total Withdraw</th>
+        <th>Profit</th>
+        <th>Last Updated</th>
+      </tr>
+    </thead>
+    <tbody id="adminWalletTableBody"></tbody>
+  </table>
+<div class="pagination" id="walletPagination">
+  <button id="prevBtn" onclick="paginate('wallet', -1)">Previous</button>
+  <span id="walletPageIndicator">Page 1</span>
+  <button id="nextBtn" onclick="paginate('wallet', 1)">Next</button>
+</div>
+
+</div>
+
+
+
+<script>
+  function showSection(id) {
+    document.querySelectorAll(".section").forEach(div => div.style.display = "none");
+    const section = document.getElementById(id);
+    if (section) {
+      section.style.display = "block";
+      if (id === "userSection") loadUserDetails();
+      if (id === "transactionSection") loadTransactions();
+      if (id === "addBalanceSection") fetchData();
+      if (id === "withdrawSection") loadWithdrawRequests();
+      if (id === "adminWalletSection")  {
+         checkAndUpdateWalletForToday();
+           loadTotalAdminBalance();
+           loadAdminWallet();
+      }
+        if (id === "adminSummarySection") loadAdminSummary();
+    }
+   // ✅ New smart function
+}
+  
+     
+
+  function logout() {
+    localStorage.clear();
+  sessionStorage.clear();
+    window.location.href = "admin-login.html";
+  }
+
+  // ✅ Format time to IST readable string
+  function formatIST(datetimeString) {
+    const utcDate = new Date(datetimeString);
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(utcDate.getTime() + istOffset);
+    return istDate.toLocaleString('en-IN');
+  }
+ let walletData = [];
+let currentWalletData = [];  // ✅ This will hold current full or filtered data
+let walletCurrentPage = 1;
+const walletRowsPerPage = 10;
+  // ✅ Update admin wallet record (auto trigger once daily)
+  async function updateAdminWallet() {
+    try {
+      await fetch("http://3.111.47.237:3000/api/admin/wallet/update", { method: "POST" });
+    } catch (e) {
+      console.warn("⚠ Failed to auto-update wallet:", e);
+    }
+  }
+
+  // ✅ Load admin wallet data from backend
+ 
+
+
+async function loadAdminWallet() {
+  try {
+    const res = await fetch("http://3.111.47.237:3000/api/admin/wallet/history");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+
+    const data = await res.json();
+    walletData = data;
+    currentWalletData = [...walletData];  // Copy for filtering
+    walletCurrentPage = 1;
+    renderWalletTablePage();
+  } catch (err) {
+    console.error("❌ Failed to load admin wallet history:", err);
+  }
+}
+async function loadTotalAdminBalance() {
+  try {
+    const res = await fetch("http://3.111.47.237:3000/api/admin/wallet/total-balance");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+
+    const balanceElement = document.getElementById("totalBalanceDisplay");
+    const formatted = new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR'
+    }).format(data.total_balance || 0);
+
+    balanceElement.textContent = `Total Balance Across All Days: ${formatted}`;
+  } catch (err) {
+    console.error("❌ Failed to fetch total balance:", err);
+    document.getElementById("totalBalanceDisplay").textContent = "❌ Failed to load total balance";
+  }
+}
+
+
+
+function renderWalletTablePage(dataToRender = currentWalletData) {
+  const tbody = document.getElementById("adminWalletTableBody");
+  tbody.innerHTML = "";
+
+  const start = (walletCurrentPage - 1) * walletRowsPerPage;
+  const end = start + walletRowsPerPage;
+  const pageData = dataToRender.slice(start, end);
+
+  if (pageData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No records found.</td></tr>`;
+  } else {
+    pageData.forEach((wallet, index) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${start + index + 1}</td>
+        <td>${wallet.date ? new Date(wallet.date + 'T00:00:00Z').toLocaleDateString('en-IN') : '--'}</td>
+        <td>₹${parseFloat(wallet.current_balance || 0).toFixed(2)}</td>
+        <td>₹${parseFloat(wallet.total_deposits || 0).toFixed(2)}</td>
+        <td>₹${parseFloat(wallet.total_withdrawals || 0).toFixed(2)}</td>
+        <td>₹${parseFloat(wallet.total_profit || 0).toFixed(2)}</td>
+        <td>${wallet.last_updated || '--'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  const totalPages = Math.ceil(dataToRender.length / walletRowsPerPage);
+  document.getElementById("walletPageIndicator").innerText = `Page ${walletCurrentPage} of ${totalPages}`;
+  document.getElementById("prevBtn").disabled = walletCurrentPage === 1;
+  document.getElementById("nextBtn").disabled = walletCurrentPage >= totalPages;
+}
+
+
+
+function paginate(type, direction) {
+  if (type === 'wallet') {
+    const totalPages = Math.ceil(currentWalletData.length / walletRowsPerPage);
+    walletCurrentPage += direction;
+
+    if (walletCurrentPage < 1) walletCurrentPage = 1;
+    if (walletCurrentPage > totalPages) walletCurrentPage = totalPages;
+
+    renderWalletTablePage(currentWalletData);  // ✅ Pass explicitly
+  }
+}
+
+
+
+
+async function checkAndUpdateWalletForToday() {
+  try {
+    // Get today's IST date string
+    const istOffset = 330 * 60 * 1000; // +5:30
+    const today = new Date(Date.now() + istOffset).toISOString().split("T")[0];
+
+    // Fetch all existing wallet rows
+    const res = await fetch("http://3.111.47.237:3000/api/admin/wallet/history");
+    const data = await res.json();
+
+    const alreadyExists = data.some(entry => entry.date === today);
+
+    if (!alreadyExists) {
+      console.log("📅 Admin wallet for today not found. Inserting...");
+      const updateRes = await fetch("http://3.111.47.237:3000/api/admin/wallet/update", {
+        method: "POST"
+      });
+      const updateData = await updateRes.json();
+      console.log(updateData.message);
+    } else {
+      console.log("✅ Admin wallet already exists for today.");
+    }
+
+    loadAdminWallet(); // ✅ Finally, load it to display
+  } catch (err) {
+    console.error("❌ Failed to check/insert admin wallet:", err);
+  }
+    await updateAdminWallet();   // ✅ Update
+  await loadAdminWallet();     // ✅ Then load latest data
+}
+
+function handleWalletSearchKey(e) {
+  if (e.key === "Enter") {
+    liveWalletSearch();
+  }
+}
+
+function liveWalletSearch() {
+  const query = document.getElementById("walletSearch").value.trim().toLowerCase();
+  walletCurrentPage = 1;
+
+  if (!query) {
+    currentWalletData = [...walletData];
+  } else {
+    currentWalletData = walletData.filter(wallet => {
+      const formattedDate = new Date(wallet.date + 'T00:00:00Z').toLocaleDateString('en-IN').toLowerCase();
+      return formattedDate.includes(query);
+    });
+  }
+
+  renderWalletTablePage();
+}
+
+
+// function renderWalletTablePage(dataToRender = currentWalletData) {
+//   const tbody = document.getElementById("adminWalletTableBody");
+//   tbody.innerHTML = "";
+
+//   const start = (walletCurrentPage - 1) * walletRowsPerPage;
+//   const end = start + walletRowsPerPage;
+//   const pageData = dataToRender.slice(start, end);
+
+//   pageData.forEach((wallet, index) => {
+//     const tr = document.createElement("tr");
+//     tr.innerHTML = `
+//       <td>${start + index + 1}</td>
+//       <td>${wallet.date ? new Date(wallet.date + 'T00:00:00Z').toLocaleDateString('en-IN') : '--'}</td>
+//       <td>₹${parseFloat(wallet.current_balance || 0).toFixed(2)}</td>
+//       <td>₹${parseFloat(wallet.total_deposits || 0).toFixed(2)}</td>
+//       <td>₹${parseFloat(wallet.total_withdrawals || 0).toFixed(2)}</td>
+//       <td>₹${parseFloat(wallet.total_profit || 0).toFixed(2)}</td>
+//       <td>${wallet.last_updated || '--'}</td>
+//     `;
+//     tbody.appendChild(tr);
+//   });
+
+//   const totalPages = Math.ceil(dataToRender.length / walletRowsPerPage);
+//   document.getElementById("walletPageIndicator").innerText = `Page ${walletCurrentPage}`;
+//   document.getElementById("prevBtn").disabled = walletCurrentPage === 1;
+//   document.getElementById("nextBtn").disabled = walletCurrentPage === totalPages;
+// }
+
+
+
+     let userPage = 1;
+const rowsPerPage = 10;
+let allUsers = [];
+
+async function loadUserDetails() {
+  const res = await fetch("http://3.111.47.237:3000/api/all-users");
+  const users = await res.json();
+  allUsers = users;
+  renderUserTable(allUsers);
+}
+
+function renderUserTable(users) {
+  const tbody = document.getElementById("userTableBody");
+  tbody.innerHTML = "";
+
+  const startIndex = (userPage - 1) * rowsPerPage;
+  const paginated = users.slice(startIndex, startIndex + rowsPerPage);
+
+  paginated.forEach((user, index) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${startIndex + index + 1}</td>
+      <td>${user.userid}</td>
+      <td>${user.username}</td>
+      <td>${user.email}</td>
+      <td>${user.phone}</td>
+      <td>${user.password}</td>
+      <td>${user.balance}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  document.getElementById("userPageIndicator").textContent = `Page ${userPage}`;
+}
+
+function paginate(section, direction) {
+  if (section === 'user') {
+    userPage += direction;
+    if (userPage < 1) userPage = 1;
+
+    const query = document.getElementById("userSearch").value.toLowerCase();
+    if (query) {
+      const filtered = allUsers.filter(user =>
+        Object.values(user).some(val =>
+          String(val).toLowerCase().includes(query)
+        )
+      );
+      renderUserTable(filtered);
+    } else {
+      renderUserTable(allUsers);
+    }
+  }
+}
+
+document.getElementById("userSearch").addEventListener("input", function () {
+  const query = this.value.toLowerCase();
+  const filtered = allUsers.filter(user =>
+    Object.values(user).some(val =>
+      String(val).toLowerCase().includes(query)
+    )
+  );
+
+  userPage = 1;
+  renderUserTable(filtered);
+
+  const pagination = document.querySelector("#userSection .pagination");
+  if (pagination) {
+    pagination.style.display = query ? "none" : "block";
+  }
+});
+
+      let transactionPage = 1;
+const transactionRowsPerPage = 10;
+let transactionData = [];
+
+async function loadTransactions() {
+  const res = await fetch("http://3.111.47.237:3000/api/summary/minute-wise");
+  transactionData = await res.json();
+  renderTransactionTable();
+}
+
+function renderTransactionTable() {
+  const tbody = document.querySelector("#summaryTable tbody");
+  tbody.innerHTML = "";
+
+  const start = (transactionPage - 1) * transactionRowsPerPage;
+  const paginated = transactionData.slice(start, start + transactionRowsPerPage);
+
+  paginated.forEach((item, index) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${start + index + 1}</td>
+      <td>${item.minute}</td>
+      <td>${item.users_played}</td>
+      <td>${item.king_bets}</td>
+      <td>${item.queen_bets}</td>
+      <td>${item.result}</td>
+      <td>${item.profit}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  updateTransactionPagination();
+}
+function updateTransactionPagination() {
+  const pagination = document.getElementById("transactionPagination");
+  const totalPages = Math.ceil(transactionData.length / transactionRowsPerPage);
+
+  pagination.innerHTML = `
+    <button onclick="changeTransactionPage(-1)" ${transactionPage === 1 ? "disabled" : ""}>Previous</button>
+    <span>Page ${transactionPage} of ${totalPages}</span>
+    <button onclick="changeTransactionPage(1)" ${transactionPage === totalPages ? "disabled" : ""}>Next</button>
+  `;
+}
+
+function changeTransactionPage(direction) {
+  const totalPages = Math.ceil(transactionData.length / transactionRowsPerPage);
+  transactionPage += direction;
+  if (transactionPage < 1) transactionPage = 1;
+  if (transactionPage > totalPages) transactionPage = totalPages;
+  renderTransactionTable();
+}
+document.getElementById("transactionSearch").addEventListener("input", function () {
+  const query = this.value.toLowerCase();
+  const filtered = transactionData.filter(row =>
+    Object.values(row).some(val =>
+      String(val).toLowerCase().includes(query)
+    )
+  );
+
+  const tbody = document.querySelector("#summaryTable tbody");
+  tbody.innerHTML = "";
+
+  filtered.slice(0, transactionRowsPerPage).forEach((item, index) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${item.minute}</td>
+      <td>${item.users_played}</td>
+      <td>${item.king_bets}</td>
+      <td>${item.queen_bets}</td>
+      <td>${item.result}</td>
+      <td>${item.profit}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Hide pagination when searching
+  document.getElementById("transactionPagination").style.display = query ? "none" : "block";
+});
+
+
+      // ✅ Main Data Fetch Function
+     // ✅ Corrected Admin Dashboard fetch and comment update for Add Balance
+// ✅ Corrected Admin Dashboard fetch and comment update for Add Balance
+let balancePage = 1;
+const balanceRowsPerPage = 10;
+let balanceData = [];
+
+async function fetchData() {
+  const res = await fetch("http://3.111.47.237:3000/api/admin/all");
+  balanceData = await res.json();
+  renderBalanceTable();
+}
+
+function renderBalanceTable() {
+  const tbody = document.getElementById("balanceTable");
+  tbody.innerHTML = "";
+
+  const start = (balancePage - 1) * balanceRowsPerPage;
+  const paginated = balanceData.slice(start, start + balanceRowsPerPage);
+
+  paginated.forEach((row, index) => {
+    tbody.appendChild(createBalanceRow(row, start + index));
+  });
+
+  updateBalancePagination();
+}
+
+function createBalanceRow(row, index) {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${index + 1}</td>
+    <td>${row.user_id}</td>
+    <td>${row.amount}</td>
+    <td>${row.transaction_id || '-'}</td> 
+    <td>
+      <img 
+        src="http://44.204.154.248:3000/uploads/${encodeURIComponent(row.screenshot)}" 
+        style="max-width: 100px; cursor: pointer;" 
+        onclick="window.open('http://44.204.154.248:3000/uploads/${encodeURIComponent(row.screenshot)}', '_blank')"
+        alt="Screenshot"
+      /><br/>
+      <a href="http://44.204.154.248:3000/uploads/${encodeURIComponent(row.screenshot)}" target="_blank" style="color: lightblue; font-size: 12px;">🧾 View</a> |
+      <a href="http://44.204.154.248:3000/uploads/${encodeURIComponent(row.screenshot)}" download style="color: lightgreen; font-size: 12px;">⬇️ Download</a>
+    </td>
+    <td>
+      <select 
+        id="status-${row.id}" 
+        onchange="handleStatusChange(this, ${row.id})" 
+        class="status-dropdown status-${row.status}" 
+        data-id="${row.id}"
+        ${row.status !== "pending" ? "disabled" : ""}
+      >
+        <option value="pending" ${row.status === "pending" ? "selected" : ""}>Pending</option>
+        <option value="approved" ${row.status === "approved" ? "selected" : ""}>Approved</option>
+        <option value="rejected" ${row.status === "rejected" ? "selected" : ""}>Rejected</option>
+      </select>
+    </td>
+    <td>
+      <input type="text" id="comment-${row.id}" value="${row.comment || ''}" 
+        style="border: none; background: transparent; color: white; width: 100%;" 
+        ${row.status !== "pending" ? "readonly style='background:#333;'" : ""} />
+    </td>
+    <td>${new Date(row.created_at).toLocaleString()}</td>
+    <td>
+      <button 
+        id="addBtn-${row.id}"
+        onclick="addBalance(${row.id}, '${row.user_id}', ${row.amount})"
+        ${row.status !== "pending" ? "disabled style='background-color:lightgray;'" : ""}
+      >
+        Add Balance
+      </button>
+    </td>
+  `;
+  return tr;
+}
+
+function updateBalancePagination() {
+  const totalPages = Math.ceil(balanceData.length / balanceRowsPerPage);
+  const pagination = document.getElementById("balancePagination");
+
+  pagination.innerHTML = `
+    <button onclick="changeBalancePage(-1)" ${balancePage === 1 ? "disabled" : ""}>Previous</button>
+    <span>Page ${balancePage} of ${totalPages}</span>
+    <button onclick="changeBalancePage(1)" ${balancePage === totalPages ? "disabled" : ""}>Next</button>
+  `;
+}
+
+function changeBalancePage(direction) {
+  const totalPages = Math.ceil(balanceData.length / balanceRowsPerPage);
+  balancePage += direction;
+  if (balancePage < 1) balancePage = 1;
+  if (balancePage > totalPages) balancePage = totalPages;
+  renderBalanceTable();
+}
+
+document.getElementById("balanceSearch").addEventListener("input", function () {
+  const query = this.value.toLowerCase().trim();
+  const tbody = document.getElementById("balanceTable");
+  tbody.innerHTML = "";
+
+  if (!query) {
+    renderBalanceTable();
+    document.getElementById("balancePagination").style.display = "block";
+    return;
+  }
+
+  const filtered = balanceData.filter(row => {
+    const createdDate = new Date(row.created_at).toLocaleString().toLowerCase();
+    return (
+      row.user_id.toLowerCase().includes(query) ||
+      String(row.amount).includes(query) ||
+      String(row.transaction_id || "").toLowerCase().includes(query) ||
+      (row.comment || "").toLowerCase().includes(query) ||
+      row.status.toLowerCase().includes(query) ||
+      createdDate.includes(query)
+    );
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No matching data found.</td></tr>`;
+  } else {
+    filtered.forEach((row, index) => {
+      tbody.appendChild(createBalanceRow(row, index));
+    });
+  }
+
+  document.getElementById("balancePagination").style.display = "none";
+});
+
+function handleStatusChange(select, id) {
+  const status = select.value;
+  select.className = `status-dropdown status-${status}`;
+  const commentInput = document.getElementById(`comment-${id}`);
+  if (!commentInput) return;
+
+  if (status === "rejected") {
+    commentInput.value = "Payment Failed";
+
+    fetch(`http://3.111.47.237:3000/api/admin/update-status/${id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status, comment: commentInput.value })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success) {
+          alert("❌ Failed to update comment in database");
+        }
+      })
+      .catch(err => console.error("❌ Error updating comment:", err));
+  } else {
+    commentInput.value = "";
+  }
+}
+
+async function addBalance(addBalanceId, userId, oldAmount) {
+  const statusSelect = document.getElementById(`status-${addBalanceId}`);
+  const currentStatus = statusSelect.value;
+  const commentInput = document.getElementById(`comment-${addBalanceId}`);
+  let commentText = commentInput?.value || "";
+
+  if (currentStatus !== "approved") {
+    alert("❌ Please change status to 'Approved' before adding balance.");
+    return;
+  }
+
+  const enteredAmount = prompt("Enter the amount to add to user's balance:", oldAmount);
+  const amount = parseFloat(enteredAmount);
+
+  if (isNaN(amount) || amount <= 0) {
+    alert("❌ Invalid amount. Please enter a positive number.");
+    return;
+  }
+
+  try {
+    commentText = "Deposit successfully";
+    commentInput.value = commentText;
+
+    const updateRes = await fetch(`http://3.111.47.237:3000/api/admin/update-status/${addBalanceId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: currentStatus, comment: commentText }),
+    });
+
+    const updateData = await updateRes.json();
+    if (!updateData.success) {
+      alert("❌ Failed to update status/comment before adding balance.");
+      return;
+    }
+
+    const res = await fetch(`http://3.111.47.237:3000/api/admin/approve/${addBalanceId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ comment: commentText, amount })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      alert(`❌ Error: ${data.message || "Failed to add balance"}`);
+    } else {
+      alert(data.message);
+      fetchData();
+      loadUserDetails && loadUserDetails();
+    }
+  } catch (err) {
+    alert("Something went wrong while adding balance.");
+    console.error(err);
+  }
+}
+
+function openImageModal(src) {
+  const modal = document.getElementById("imageModal");
+  const img = document.getElementById("modalImage");
+  img.src = src;
+  modal.style.display = "flex";
+}
+
+function closeImageModal() {
+  document.getElementById("imageModal").style.display = "none";
+}
+
+
+
+  let withdrawPage = 1;
+const withdrawRowsPerPage = 10;
+let withdrawData = [];
+
+async function loadWithdrawRequests() {
+  const res = await fetch("http://3.111.47.237:3000/api/withdraw/all");
+  const data = await res.json();
+
+  // ✅ Filter duplicate pending requests
+  const uniqueRequests = [];
+  const seen = new Set();
+
+  data.forEach((req) => {
+    const key = `${req.user_id}_${req.amount}_${req.account_number}_${req.ifsc_code}_${req.status}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueRequests.push(req);
+    }
+  });
+
+  withdrawData = uniqueRequests;
+  renderWithdrawTable();
+}
+
+function renderWithdrawTable() {
+  const tbody = document.getElementById("withdrawTableBody");
+  tbody.innerHTML = "";
+
+  const showCancelled = document.getElementById("showCancelledToggle")?.checked;
+
+  const start = (withdrawPage - 1) * withdrawRowsPerPage;
+  const paginated = withdrawData.slice(start, start + withdrawRowsPerPage);
+
+  paginated.forEach((withdraw, index) => {
+    // ❌ Skip cancelled rows if toggle is off
+    if (!showCancelled && withdraw.status === "cancelled_by_user") return;
+
+    const tr = document.createElement("tr");
+
+    // 🚫 Render cancelled row as red info line
+    if (withdraw.status === "cancelled_by_user") {
+      tr.innerHTML = `
+        <td colspan="8" style="color: red; background: #ffeaea; font-weight: bold; text-align: center;">
+          ❌ Withdraw Request Cancelled by User - User ID: ${withdraw.user_id}, Amount: ₹${withdraw.amount}
+        </td>
+      `;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    const isDisabled = withdraw.status !== "pending";
+    tr.innerHTML = `
+      <td>${start + index + 1}</td>
+      <td>${withdraw.user_id}</td>
+      <td>${withdraw.amount}</td>
+      <td>${withdraw.account_number}</td>
+      <td>${withdraw.ifsc_code}</td>
+      <td>
+        <select id="status-${withdraw.id}" class="status-${withdraw.status}" onchange="updateSelectColor(this)" ${isDisabled ? "disabled" : ""}>
+          <option value="pending" ${withdraw.status === "pending" ? "selected" : ""}>Pending</option>
+          <option value="approved" ${withdraw.status === "approved" ? "selected" : ""}>Approved</option>
+          <option value="rejected" ${withdraw.status === "rejected" ? "selected" : ""}>Rejected</option>
+        </select>
+      </td>
+      <td><input id="comment-${withdraw.id}" value="${withdraw.comment || ''}" ${isDisabled ? "disabled" : ""} /></td>
+      <td>
+        <button id="submit-${withdraw.id}" onclick="submitWithdraw(${withdraw.id})" ${isDisabled ? "disabled style='background-color: #aaa'" : ""}>
+          ${withdraw.status === "approved" ? "✔️ Approved" : withdraw.status === "rejected" ? "✔️ Rejected" : "Submit"}
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  updateWithdrawPagination();
+}
+
+
+function updateWithdrawPagination() {
+  const totalPages = Math.ceil(withdrawData.length / withdrawRowsPerPage);
+  const pagination = document.getElementById("withdrawPagination");
+
+  pagination.innerHTML = `
+    <button onclick="changeWithdrawPage(-1)" ${withdrawPage === 1 ? "disabled" : ""}>Previous</button>
+    <span>Page ${withdrawPage} of ${totalPages}</span>
+    <button onclick="changeWithdrawPage(1)" ${withdrawPage === totalPages ? "disabled" : ""}>Next</button>
+  `;
+}
+
+function changeWithdrawPage(direction) {
+  const totalPages = Math.ceil(withdrawData.length / withdrawRowsPerPage);
+  withdrawPage += direction;
+  if (withdrawPage < 1) withdrawPage = 1;
+  if (withdrawPage > totalPages) withdrawPage = totalPages;
+  renderWithdrawTable();
+}
+document.getElementById("withdrawSearch").addEventListener("input", function () {
+  const query = this.value.toLowerCase();
+
+  const filtered = withdrawData.filter(row =>
+    Object.values(row).some(val =>
+      String(val).toLowerCase().includes(query)
+    )
+  );
+
+  const tbody = document.getElementById("withdrawTableBody");
+  tbody.innerHTML = "";
+
+  filtered.slice(0, withdrawRowsPerPage).forEach((withdraw, index) => {
+    const isDisabled = withdraw.status !== "pending";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${withdraw.user_id}</td>
+      <td>${withdraw.amount}</td>
+      <td>${withdraw.account_number}</td>
+      <td>${withdraw.ifsc_code}</td>
+      <td>
+        <select id="status-${withdraw.id}" class="status-${withdraw.status}" onchange="updateSelectColor(this)" ${isDisabled ? "disabled" : ""}>
+          <option value="pending" ${withdraw.status === "pending" ? "selected" : ""}>Pending</option>
+          <option value="approved" ${withdraw.status === "approved" ? "selected" : ""}>Approved</option>
+          <option value="rejected" ${withdraw.status === "rejected" ? "selected" : ""}>Rejected</option>
+        </select>
+      </td>
+      <td><input id="comment-${withdraw.id}" value="${withdraw.comment || ''}" ${isDisabled ? "disabled" : ""} /></td>
+      <td>
+        <button id="submit-${withdraw.id}" onclick="submitWithdraw(${withdraw.id})" ${isDisabled ? "disabled style='background-color: #aaa'" : ""}>
+          ${withdraw.status === "approved" ? "✔️ Approved" : withdraw.status === "rejected" ? "✔️ Rejected" : "Submit"}
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("withdrawPagination").style.display = query ? "none" : "block";
+});
+
+
+async function submitWithdraw(id) {
+  const statusSelect = document.getElementById(`status-${id}`);
+  const selectedStatus = statusSelect?.value;
+  const commentInput = document.getElementById(`comment-${id}`);
+  let comment = commentInput?.value || "";
+
+  if (!selectedStatus || selectedStatus === "pending") {
+    alert("⚠️ Please select Approved or Rejected.");
+    return;
+  }
+
+  const withdrawRes = await fetch(`http://3.111.47.237:3000/api/withdraw/${id}`);
+  const withdraw = await withdrawRes.json();
+  const user_id = withdraw.user_id;
+  const amount = parseFloat(withdraw.amount); // ✅ FIXED: Ensure amount is number
+
+  if (selectedStatus === "approved") {
+    const confirmApprove = confirm("✅ Are you sure to APPROVE this withdrawal?");
+    if (!confirmApprove) return;
+
+  }
+
+  if (selectedStatus === "rejected") {
+    const confirmReject = confirm("❌ Are you sure to REJECT this withdrawal?");
+    if (!confirmReject) return;
+  }
+
+  await fetch(`http://3.111.47.237:3000/api/withdraw/submit/${id}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: selectedStatus, comment })
+  });
+
+  disableRow(id, selectedStatus);
+
+  alert(`✅ Status updated: ${selectedStatus}`);
+  loadWithdrawRequests();
+  loadUserDetails?.();
+  loadAdminWallet?.();
+}
+
+function disableRow(id, status) {
+  const btn = document.getElementById(`submit-${id}`);
+  const select = document.getElementById(`status-${id}`);
+  const commentInput = document.getElementById(`comment-${id}`);
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = status === "approved" ? "✔️ Approved" : "✔️ Rejected";
+    btn.style.backgroundColor = "#aaa";
+  }
+  if (select) {
+    select.disabled = true;
+  }
+  if (commentInput) {
+    commentInput.disabled = true;
+  }
+}
+
+function updateSelectColor(select) {
+  const id = select.id.split("-")[1];
+  const commentInput = document.getElementById(`comment-${id}`);
+
+  select.classList.remove("status-approved", "status-rejected", "status-pending");
+
+  if (select.value === "approved") {
+    select.classList.add("status-approved");
+    commentInput.value = "Withdraw successful";
+  } else if (select.value === "rejected") {
+    select.classList.add("status-rejected");
+    commentInput.value = "Payment invalid";
+  } else {
+    select.classList.add("status-pending");
+    commentInput.value = "";
+  }
+}
+
+
+
+      // Run on dashboard load
+      window.onload = () => {
+  // Optionally load a default section like User Details
+  showSection('userSection'); // or 'adminWalletSection' or whichever you prefer
+};
+
+      // ✅ Disable button after submit
+
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener("change", async (event) => {
+          if (event.target && event.target.classList.contains("status-dropdown")) {
+            const select = event.target;
+            const id = select.dataset.id;
+            const status = select.value;
+
+            const commentInput = document.getElementById(`comment-${id}`);
+
+            // Set automatic comment based on status
+            if (status === "approved") {
+              commentInput.value = "Deposit successfully";
+            } else if (status === "rejected") {
+              commentInput.value = "Payment invalid";
+            } else {
+              commentInput.value = "";
+            }
+
+            // Optional: Auto-save to backend
+            try {
+              const res = await fetch(`http://3.111.47.237:3000/api/admin/update-status/${id}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status, comment: commentInput.value })
+              });
+
+              const data = await res.json();
+              if (!data.success) {
+                alert("❌ Failed to auto-save status/comment");
+              }
+            } catch (err) {
+              console.error("Error updating comment:", err);
+              alert("❌ Server error while updating status/comment");
+            }
+          }
+        });
+      });
+      document.getElementById("showCancelledToggle")?.addEventListener("change", () => {
+  renderWithdrawTable();
+});
+
+    </script>
+
+</body>
+
+</html>
+
+</body>
+
+</html>
