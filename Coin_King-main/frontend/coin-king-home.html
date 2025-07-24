@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Coin King - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #6a89cc; /* A soft blue */
+      --secondary-color: #f0f4f8; /* Light background */
+      --accent-color: #83b4c9; /* A slightly darker blue for accents */
+      --text-color: #333;
+      --error-color: #e74c3c;
+      --card-background: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+    }
+ 
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, var(--secondary-color) 0%, var(--accent-color) 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh; /* Use min-height for better adaptability */
+      margin: 0;
+      color: var(--text-color);
+      overflow: hidden; /* Prevent scrollbar from background gradient */
+    }
+ 
+    .container {
+      background: var(--card-background);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 400px;
+      box-sizing: border-box;
+      backdrop-filter: blur(8px); /* Frosted glass effect */
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+ 
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+ 
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+input[type="submit"] {
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+  border: none; /* override the border for cleaner button */
+}
+
+input[type="submit"]:hover {
+  background: #0056b3;
+}
+
+.extra-buttons {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.extra-buttons a {
+  display: inline-block;
+  margin: 5px 10px;
+  text-decoration: none;
+  color: #007bff;
+  font-weight: bold;
+}
+
+.extra-buttons a:hover {
+  text-decoration: underline;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+  display: none;
+  margin-top: -8px;
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- Login Form -->
+  <div class="container" id="loginContainer">
+    <h2>Coin King Login</h2>
+    <form id="loginForm" onsubmit="return loginUser(event)">
+      <input type="text" id="loginId" name="loginId" placeholder="Phone or Username" required>
+      <input type="password" id="password" name="password" placeholder="Password" required>
+      <div id="passwordError" class="error">Password must include 1 capital letter, 1 number, 1 special character (@), and be 8+ characters.</div>
+      <input type="submit" value="Login">
+    </form>
+
+    <div class="extra-buttons">
+      <a href="#" onclick="showForgotPassword()">Forgot Password?</a> |
+      <a href="#" onclick="showSignup()">Sign Up</a>
+    </div>
+  </div>
+
+  <!-- Sign-Up Form -->
+  <div class="container" id="signupForm" style="display:none;">
+    <h2>Sign Up</h2>
+    <form onsubmit="return validateSignup()">
+      <input type="text" id="signupUsername" placeholder="Username" required>
+      <input type="text" id="signupPhone" placeholder="Phone Number" required>
+      <input type="email" id="signupEmail" placeholder="Email" required>
+      <input type="password" id="signupPassword" placeholder="Password" required>
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+      <div id="signupError" class="error">Password must include 1 capital letter, 1 number, 1 special character (@), and be 8+ characters.</div>
+      <div id="confirmError" class="error">Passwords do not match.</div>
+      <input type="submit" value="Sign Up">
+    </form>
+    <div class="extra-buttons">
+      <a href="#" onclick="showLogin()">Back to Login</a>
+    </div>
+  </div>
+
+  <!-- Forgot Password Form -->
+  <div class="container" id="forgotForm" style="display:none;">
+    <h2>Forgot Password</h2>
+    <form>
+      <input type="text" placeholder="Email or Phone" required>
+      <input type="submit" value="Send Reset Link">
+    </form>
+    <div class="extra-buttons">
+      <a href="#" onclick="showLogin()">Back to Login</a>
+    </div>
+  </div>
+
+  <script>
+    // Show Sign-Up Form
+    function showSignup() {
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'block';
+      document.getElementById('forgotForm').style.display = 'none';
+    }
+
+    // Show Forgot Password Form
+    function showForgotPassword() {
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('forgotForm').style.display = 'block';
+    }
+
+    // Show Login Form
+    function showLogin() {
+      document.getElementById('loginContainer').style.display = 'block';
+      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('forgotForm').style.display = 'none';
+    }
+
+    // Login Validation
+    function validateLogin() {
+      const password = document.getElementById('password').value;
+      const errorBox = document.getElementById('passwordError');
+      const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!]).{8,}$/;
+      if (!regex.test(password)) {
+        errorBox.style.display = 'block';
+        return false;
+      }
+      errorBox.style.display = 'none';
+      return true;
+    }
+
+    // Sign-Up Validation
+    function validateSignup() {
+      const phone = document.getElementById('signupPhone').value;
+      const password = document.getElementById('signupPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const error = document.getElementById('signupError');
+      const confirmError = document.getElementById('confirmError');
+      const phoneRegex = /^[0-9]{10}$/;
+      const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!]).{8,}$/;
+
+      let valid = true;
+
+      if (!phoneRegex.test(phone)) {
+        alert("Phone number must be a 10-digit number.");
+        valid = false;
+      }
+
+      if (!passwordRegex.test(password)) {
+        error.style.display = 'block';
+        valid = false;
+      } else {
+        error.style.display = 'none';
+      }
+
+      if (password !== confirmPassword) {
+        confirmError.style.display = 'block';
+        valid = false;
+      } else {
+        confirmError.style.display = 'none';
+      }
+
+      if (valid) {
+        const userData = {
+          username: document.getElementById('signupUsername').value,
+          phone: phone,
+          email: document.getElementById('signupEmail').value,
+          password: password,
+        };
+        saveUsers(userData);
+      }
+
+      return false; // Prevent default form submit
+    }
+
+    // API Call for Signup
+    async function saveUsers(userData) {
+  try {
+    const res = await fetch(`http://3.111.47.237:3000/api/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData)
+    });
+
+    const result = await res.json();
+    console.log("Response from backend:", result);
+
+    if (!res.ok) {
+      // ❌ Backend returned error (like duplicate email)
+      alert(result.message || "Registration failed");
+      return;
+    }
+
+    if (result && result.user) {
+      // ✅ Success
+      alert("✅ Registered successfully! Please login.");
+      showLogin(); // Switch to login form
+    } else {
+      alert("Something went wrong. Please try again.");
+    }
+
+  } catch (err) {
+    console.error("User register failed", err);
+    alert("❌ Server error: " + err.message);
+  }
+}
+function showPopup(message, bgColor = "#2ecc71") {
+  const popup = document.getElementById("popupMessage");
+  popup.textContent = message;
+  popup.style.backgroundColor = bgColor;
+  popup.style.display = "block";
+  popup.style.opacity = "1";
+
+  setTimeout(() => {
+    popup.style.opacity = "0";
+    setTimeout(() => {
+      popup.style.display = "none";
+    }, 500);
+  }, 3000);
+}
+
+    async function loginUser(event) {
+  event.preventDefault();
+
+  const loginId = document.getElementById('loginId').value.trim();
+  const password = document.getElementById('password').value;
+
+  const bodyData = {
+    identifier: loginId,
+    password: password
+  };
+
+  try {
+    const res = await fetch('http://3.111.47.237:3000/api/login', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData)
+    });
+
+    const result = await res.json();
+    console.log("Login Response:", result);
+
+    if (res.ok && result.userid) {
+      localStorage.setItem("userid", result.userid);
+      // ✅ Removed success alert
+      window.location.href = "CK11 Final.html"; // Adjust if needed
+    } else {
+      alert(result.message || "Login failed!");
+    }
+
+  } catch (error) {
+    console.error("Login error:", error);
+    alert("Error while logging in.");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("loginForm").addEventListener("submit", loginUser);
+});
+
+
+  </script>
+</body>
+</html>
+
+
+

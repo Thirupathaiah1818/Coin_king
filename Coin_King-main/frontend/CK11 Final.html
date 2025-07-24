@@ -1,0 +1,2583 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin King</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"
+        xintegrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .wallet {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: #FFD700;
+            color: #000;
+            font-weight: bold;
+            padding: 12px 15px;
+            border-radius: 25px;
+            box-shadow: 0 0 12px #FFD700;
+            font-size: 15px;
+            z-index: 1000;
+            transition: 0.3s ease;
+            height: auto;
+            line-height: 1.2;
+        }
+
+        .wallet.win {
+            background: #00c897;
+            color: #fff;
+            box-shadow: 0 0 12px #00c897;
+        }
+
+        .wallet.lose {
+            background: #ff4444;
+            color: #fff;
+            box-shadow: 0 0 12px #ff4444;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding-top: 60px;
+            flex-direction: column;
+        }
+
+        .game-box {
+            background: #1f1f1f;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px #000;
+            text-align: center;
+            width: 360px;
+            max-width: 95%;
+        }
+
+        .coin {
+            width: 120px;
+            height: 120px;
+            margin: 20px auto;
+            perspective: 1000px;
+        }
+
+        .coin-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .spin {
+            animation: rotateCoin 5s linear;
+        }
+
+        @keyframes rotateCoin {
+            from {
+                transform: rotateY(0deg);
+            }
+
+            to {
+                transform: rotateY(7200deg);
+            }
+        }
+
+        .side {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            box-shadow: 0 0 12px #FFD700;
+            color: #000;
+        }
+
+        .king {
+            transform: rotateY(0deg);
+        }
+
+        .queen {
+            transform: rotateY(180deg);
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        .bet-controls button {
+            padding: 10px;
+            width: 40px;
+            font-size: 20px;
+            font-weight: bold;
+            background: #FFD700;
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            margin: 0 8px;
+            cursor: pointer;
+        }
+
+        #bet {
+            background: #fff;
+            color: #000;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100px;
+            text-align: center;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .side-btn {
+            background-color: #333;
+            color: #fff;
+            cursor: pointer;
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease-out;
+            /* Added transitions */
+        }
+
+        .side-btn.selected {
+            background-color: #00c897;
+            /* A distinct green for selected */
+            color: #fff;
+            box-shadow: 0 0 15px rgba(0, 200, 151, 0.8);
+            /* Glow effect */
+            transform: scale(1.05);
+            /* Slightly enlarge when selected */
+        }
+
+        .start-btn {
+            background-color: #00c897;
+            color: #fff;
+            width: 200px;
+            cursor: pointer;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        #result {
+            margin-top: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #FFD700;
+            display: none;
+        }
+
+        /* Removed #cooldown as it's replaced by game timer */
+
+        .history {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .history ul {
+            padding-left: 20px;
+            list-style: none;
+        }
+
+        .history li.win {
+            color: #00ff99;
+        }
+
+        .history li.lose {
+            color: #ff6666;
+        }
+
+        /* New styles for King and Queen symbols in history */
+        .king-symbol {
+            color: #28a745;
+            /* Green */
+            font-weight: bold;
+        }
+
+        .queen-symbol {
+            color: #dc3545;
+            /* Red */
+            font-weight: bold;
+        }
+
+
+        .section {
+            padding: 20px;
+            width: 100%;
+        }
+
+        .section-container {
+            font-size: 15px;
+            background-color: #151515;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: rgb(45, 37, 37);
+        }
+
+        .section-container input[type="number"],
+        .section-container input[type="text"],
+        .section-container input[type="file"] {
+            width: calc(100% - 24px);
+            /* Adjust for padding and border */
+            padding: 10px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #555;
+            /* Darker, softer border */
+            border-radius: 6px;
+            /* More rounded corners */
+            box-sizing: border-box;
+            background-color: #222;
+            /* Deeper background */
+            color: #eee;
+            /* Lighter text */
+            font-size: 0.95em;
+        }
+
+        .section-container input:focus {
+            outline: none;
+            border-color: #00bfa5;
+            /* Accent color on focus */
+            box-shadow: 0 0 5px rgba(0, 191, 165, 0.5);
+            /* Subtle glow on focus */
+        }
+
+        .section-container button {
+            background-color: #2e7d32;
+            /* Pleasant green */
+            color: #f0f8ea;
+            /* Light, contrasting text */
+            padding: 12px 18px;
+            /* Slightly larger padding */
+            border: none;
+            border-radius: 6px;
+            /* More rounded corners */
+            cursor: pointer;
+            width: 100%;
+            margin-top: 12px;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            /* Subtle shadow */
+        }
+
+        .section-container button:hover {
+            background-color: #1b5e20;
+            /* Darker shade on hover */
+            transform: scale(1.02);
+            /* Gentle scale on hover */
+        }
+
+        .section-container label {
+            display: block;
+            margin-top: 15px;
+            /* Increased margin */
+            margin-bottom: 6px;
+            color: #b0bec5;
+            /* Softer label color */
+            text-align: left;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        #addBalanceSuccessMessage,
+        #addBalanceErrorMessage {
+            /* Combined styles for success/error messages */
+            text-align: center;
+            margin-top: 15px;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.95em;
+            display: none;
+            /* Initially hidden - show with JavaScript */
+        }
+
+        #addBalanceSuccessMessage {
+            background-color: rgba(76, 175, 80, 0.15);
+            /* Light green */
+            color: #2e7d32;
+            /* Darker pleasant green text */
+            border: 1px solid #4caf50;
+            /* Green border */
+        }
+
+        #addBalanceErrorMessage {
+            background-color: rgba(255, 69, 0, 0.15);
+            /* Light orange-red */
+            color: #d32f2f;
+            /* Darker red text */
+            border: 1px solid #ff4500;
+            /* Orange-red border */
+        }
+
+        #withdrawSuccessMessage,
+        #popupMessageWithdraw,
+        #withdrawErrorMessage {
+            /* Added withdrawErrorMessage */
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9em;
+            display: none;
+            /* Initially hidden */
+        }
+
+        #withdrawSuccessMessage {
+            background-color: rgba(76, 175, 80, 0.15);
+            /* Light green */
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+
+        #popupMessageWithdraw {
+            background-color: rgba(255, 167, 38, 0.15);
+            /* Light amber */
+            color: #ff9800;
+            border: 1px solid #ff9800;
+        }
+
+        #withdrawErrorMessage {
+            /* New style for withdraw errors */
+            background-color: lch(3.02% 0 296.81 / 0.951);
+            color: #f70707;
+            border: 1px solid #4a07f4;
+        }
+
+
+        .detail-row td {
+            font-size: 0.9em;
+            background-color: #1c1c1c;
+            /* Slightly darker background */
+            color: #90a4ae;
+            padding: 10px;
+        }
+
+        /* Attractive and Pleasant Menu Details Styles */
+        .offcanvas-header {
+            background-color: #37474f;
+            /* Cool grey header */
+            border-bottom: 1px solid #546e7a;
+            padding: 18px;
+        }
+
+        .offcanvas-title {
+            color: #eceff1 !important;
+            /* Very light grey title */
+            font-size: 1.4em;
+            font-weight: bold;
+            letter-spacing: 0.7px;
+        }
+
+        .offcanvas-body {
+            padding: 25px;
+            background-color: #263238;
+            /* Darker, pleasant background */
+        }
+
+        .offcanvas-body .navbar-nav {
+            margin-bottom: 20px;
+        }
+
+        .offcanvas-body .navbar-nav .nav-item {
+            margin-bottom: 10px;
+        }
+
+        .offcanvas-body .navbar-nav .nav-link {
+            color: #b0bec5 !important;
+            /* Soft blue-grey link color */
+            padding: 12px 18px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .offcanvas-body .navbar-nav .nav-link:hover {
+            background-color: #455a64;
+            /* Slightly lighter grey on hover */
+            color: #fff !important;
+        }
+
+        .offcanvas-body .navbar-nav details {
+            background-color: #37474f;
+            /* Cool grey background for details */
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #546e7a;
+            /* Subtle border */
+        }
+
+        .offcanvas-body .navbar-nav summary {
+            color: #cfd8dc !important;
+            /* Light grey summary text */
+            padding: 14px 20px;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .offcanvas-body .navbar-nav summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .offcanvas-body .navbar-nav summary::after {
+            content: '▾';
+            /* Down arrow for open/close */
+            font-size: 1em;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .offcanvas-body .navbar-nav details[open]>summary::after {
+            transform: rotate(180deg);
+        }
+
+        .offcanvas-body .navbar-nav summary:hover {
+            background-color: #455a64;
+            color: #fff !important;
+        }
+
+        .offcanvas-body .navbar-nav .section-container {
+            background-color: #455a64;
+            /* Slightly lighter grey for section content */
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .offcanvas-body .navbar-nav .section-container h3 {
+            color: #eceff1;
+            font-size: 1.3em;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #546e7a;
+            padding-bottom: 8px;
+        }
+
+        .offcanvas-body .navbar-nav .section-container p,
+        .offcanvas-body .navbar-nav .section-container strong,
+        .offcanvas-body .navbar-nav .section-container label {
+            color: #b0bec5;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .offcanvas-body .navbar-nav .section-container input[type="number"],
+        .offcanvas-body .navbar-nav .section-container input[type="text"],
+        .offcanvas-body .navbar-nav .section-container input[type="file"] {
+            width: calc(100% - 24px);
+            /* Adjust for padding and border */
+            padding: 10px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #555;
+            /* Darker, softer border */
+            border-radius: 6px;
+            /* More rounded corners */
+            box-sizing: border-box;
+            background-color: #222;
+            /* Deeper background */
+            color: #eee;
+            /* Lighter text */
+            font-size: 0.95em;
+        }
+
+        .section-container input:focus {
+            outline: none;
+            border-color: #00bfa5;
+            /* Accent color on focus */
+            box-shadow: 0 0 5px rgba(0, 191, 165, 0.5);
+            /* Subtle glow on focus */
+        }
+
+        .section-container button {
+            background-color: #2e7d32;
+            /* Pleasant green */
+            color: #f0f8ea;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 12px;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-container button:hover {
+            background-color: #1b5e20;
+            transform: scale(1.02);
+        }
+
+        .offcanvas-body .navbar-nav #searchInput {
+            background-color: #37474f;
+            border: 1px solid #546e7a;
+            color: #eceff1;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        .offcanvas-body button {
+            /* Logout button style */
+            background-color: #d32f2f;
+            /* Pleasant red */
+            color: #ffebee;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 18px;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .offcanvas-body button:hover {
+            background-color: #b71c1c;
+            transform: scale(1.02);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            /* Slightly stronger shadow */
+        }
+
+        th,
+        td {
+            border: 1px solid #455a64;
+            text-align: left;
+            padding: 12px 15px;
+            font-size: 0.9em;
+        }
+
+        th {
+            background-color: #37474f;
+            color: #eceff1;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #263238;
+        }
+
+        .detail-row td {
+            background-color: #1c1c1c;
+            color: #90a4ae;
+        }
+
+        .table-wrapper-horizontal {
+            overflow-x: auto;
+            /* Enable horizontal scrollbar when content overflows */
+            margin-top: 10px;
+            /* Add some space above the table */
+            border: 1px solid #555;
+            /* Optional: Add a border to the scrollable area */
+            border-radius: 8px;
+        }
+
+        .horizontal-table {
+            width: auto;
+            /* Important: Let the table width expand based on content */
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            /* Add some space below the table */
+        }
+
+        .horizontal-table th,
+        .horizontal-table td {
+            border: 1px solid #455a64;
+            /* Use your theme's border color */
+            text-align: left;
+            padding: 12px 15px;
+            white-space: nowrap;
+            /* Prevent text wrapping, forcing horizontal overflow */
+            font-size: 0.9em;
+        }
+
+        .horizontal-table th {
+            background-color: #37474f;
+            /* Use your theme's header background */
+            color: #eceff1;
+            /* Use your theme's header text color */
+            font-weight: bold;
+        }
+
+        .horizontal-table tr:nth-child(even) {
+            background-color: #263238;
+            /* Use your theme's even row background */
+        }
+
+        /* Optional: Style the scrollbar for WebKit browsers (Chrome, Safari) */
+        .table-wrapper-horizontal::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-wrapper-horizontal::-webkit-scrollbar-thumb {
+            background-color: #666;
+            border-radius: 4px;
+        }
+
+        .table-wrapper-horizontal::-webkit-scrollbar-thumb:hover {
+            background-color: #888;
+        }
+
+        /* Optional: Style the scrollbar for Firefox */
+        .table-wrapper-horizontal {
+            scrollbar-width: thin;
+            scrollbar-color: #666 #333;
+        }
+
+        /* NEW: Styles for the in-page "Balance Added" popup */
+        #balanceAddedOnPagePopup {
+            display: none;
+            /* Hidden by default */
+            position: fixed;
+            /* Stays in place relative to the viewport */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* Centers the popup */
+            background-color: rgba(33, 150, 243, 0.95);
+            /* A slightly darker blue with more opacity */
+            color: #fff;
+            padding: 25px 35px;
+            /* More generous padding */
+            border-radius: 12px;
+            /* More rounded corners */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            /* Stronger shadow */
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            /* Slightly larger text */
+            z-index: 2000;
+            /* Higher than offcanvas */
+            max-width: 350px;
+            /* Max width for responsiveness */
+            animation: fadeIn 0.3s ease-out;
+            /* Smooth fade-in */
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        #balanceAddedOnPagePopup.hidden {
+            animation: fadeOut 0.5s ease-out forwards;
+            /* Smooth fade-out */
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <div class="wallet" id="wallet">Wallet: ₹500</div>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasDarkNavbar"
+                aria-labelledby="offcanvasDarkNavbarLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                        aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item w-100">
+                            <details>
+                                <summary class="nav-link">profile details</summary>
+                                <div class="section" id="profileDetailsSection">
+                                    <div class="section-container">
+                                        <p><strong>Username:</strong> <span id="profileUsername"></span></p>
+                                        <p><strong>Phone:</strong> <span id="profilePhone"></span></p>
+                                        <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+
+                                    </div>
+                                </div>
+                            </details>
+                        </li>
+
+                        <li class="nav-item w-100">
+                            <details>
+                                <summary class="nav-link">Add Balance</summary>
+                                <div class="section" id="addBalanceSection">
+                                    <div class="section-container">
+                                        <h3>Add Balance</h3>
+                                        <strong>Current Wallet Balance: ₹<span id="walletBalanceAdd">0</span></strong>
+                                        <!-- Updated message for admin approval -->
+                                        <div id="addBalanceSuccessMessage">Your request for balance addition has been
+                                            submitted and is pending admin approval.</div>
+                                        <div id="addBalanceErrorMessage"></div>
+                                        <!-- Popup Message Box -->
+<div id="popupMessage" style="display: none;"></div>
+
+                                        <form id="addBalanceForm">
+                                            <label>Amount:</label>
+                                            <input type="number" id="addAmount" placeholder="Enter amount to add"
+                                                min="1" required />
+                                            <label>Transaction ID:</label>
+<input type="text" id="transactionId" name="transaction_id"  placeholder="Enter transaction/reference ID" />
+
+                                            <label>Upload Screenshot (.jpg):</label>
+                                            <input type="file" id="screenshotUpload" accept=".jpg,.jpeg" required>
+                                            <button type="submit" id="addBalanceBtn">Add Balance</button>
+                                        </form>
+                                        <div id="qrCodeContainer">
+                                            <p>Scan this QR to pay:</p>
+                                            <img src="assets/qr-code.png" alt="QR Code for payment" style="width: 150px; height: 150px;">
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </li>
+
+                       <li class="nav-item">
+  <details>
+    <summary class="nav-link">Withdraw</summary>
+    <div class="section" id="withdrawSection">
+      <div class="section-container">
+        <h3>Withdraw</h3>
+        <strong>Current Wallet Balance: ₹<span id="walletBalanceWithdraw">0</span></strong><br>
+        <div id="winningsDisplay" style="color: red; font-weight: bold; margin-bottom: 10px;"></div>
+           <div id="popupMessageWithdraw" style="display: none;">Withdrawals will be processed within 10 minutes to 24 hours.</div>
+  <div id="withdrawSuccessMessage" style="display: none;"></div>
+        <div id="withdrawErrorMessage"></div>
+        <form id="withdrawForm">
+          <label>Account Holder Name:</label>
+          <input type="text" id="accountHolder" maxlength="36" required>
+          <label>Account Number:</label>
+          <input type="text" id="accountNumber" pattern="^\d{9,18}$" required>
+          <label>IFSC Code:</label>
+          <input type="text" id="ifscCode" pattern="^[A-Za-z]{4}\d{7}$" required>
+          <label>Amount:</label>
+          <input type="number" id="withdrawAmount" min="100" required>
+          <button type="submit">Withdraw</button>
+        </form>
+      </div>
+    </div>
+  </details>
+</li>
+                        <li class="nav-item w-100">
+                            <details>
+                                <summary class="nav-link">Transaction History</summary>
+                                <div class="section" id="transactionHistorySection">
+                                    <div class="section-container">
+                                        <h3>Transaction History</h3>
+                                        <input type="text" id="searchInput" onkeyup="searchTransactions()"
+                                            placeholder="Search...">
+                                        <div class="table-wrapper-horizontal">
+                                            <table id="transactionTable" class="horizontal-table">
+                                                <thead id="transactionTableHeader">
+                                                    <tr>
+                                                        <th>S.No</th>
+                                                        <th>Type</th>
+                                                        <th>Amount</th>
+                                                        <th>Balance</th>
+                                                        <th>Status</th>
+
+                                                        <th>created_at</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="transactionTableBody">
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </li>
+                        <li class="nav-item w-100">
+  <details>
+    <summary class="nav-link">Bet History</summary>
+    <div class="section" id="betHistorySection">
+      <div class="section-container">
+        <h3 style="color: #4A00E0;">🪙 Your Bet History</h3>
+        <div class="table-wrapper-horizontal">
+          <table id="betHistoryTable" class="horizontal-table">
+            <thead>
+              <tr style="background-color: #4A00E0; color: white;">
+                <th style="padding: 10px;">S.No</th>
+                <th>Amount</th>
+                <th>Side</th>
+                <th>Result</th>
+                <th>Status</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="betHistoryTableBody" style="background: #060606;"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </details>
+</li>
+
+                        <!-- <li class="nav-item w-100">
+                            <details>
+                                <summary class="nav-link">Game Profit Summary</summary>
+                                <div class="section">
+                                    <div class="section-container">
+                                        <h3>Game Profit Summary (Last 50 Minutes)</h3>
+                                        <div id="gameSummaryMessage" style="color: red; font-weight: bold;"></div>
+                                        <div class="table-wrapper-horizontal">
+                                            <table id="gameSummaryTable" class="horizontal-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Minute</th>
+                                                        <th>Users Played</th>
+                                                        <th>King Bets</th>
+                                                        <th>Queen Bets</th>
+                                                        <th>Result</th>
+                                                        <th>Profit</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="gameSummaryTableBody"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </li> -->
+
+                        <li class="nav-item">
+                            <button onclick="logout()">Logout</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container">
+        <div class="game-box">
+            <h1>🪙 COIN KING</h1>
+            <div class="coin">
+                <div class="coin-inner" id="coinInner">
+                    <div class="side king">KING</div>
+                    <div class="side queen">QUEEN</div>
+                </div>
+            </div>
+
+            <div id="result">Result: </div>
+
+            <div class="controls">
+                <div id="game-status" style="margin-top: 15px; font-weight: bold; font-size: 1.1em;">
+                    <p id="gamePhaseDisplay">Phase: Loading...</p>
+                    <p id="gameTimerDisplay">Time Left: --s</p>
+                </div>
+
+                <div class="bet-controls">
+                    <button onclick="changeBet(-10)">−</button>
+                    <input type="text" id="bet" value="100" />
+                    <button onclick="changeBet(10)">+</button>
+                </div>
+                <div>
+                    <!-- Corrected onclick to use 'King' and 'Queen' for selectSide function -->
+                    <button class="side-btn" id="btnKing" onclick="selectSide('King')">KING</button>
+                    <button class="side-btn" id="btnQueen" onclick="selectSide('Queen')">QUEEN</button>
+                </div>
+                <button type="button" id="startButton" class="start-btn" onclick="placeBet()">PLACE BET</button>
+
+
+
+            </div>
+
+            <div class="history">
+                <h3>RecentWins</h3>
+                <ul id="historyList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Updated popup message for balance addition -->
+    <div id="balanceAddedOnPagePopup">
+        Your request for balance addition has been submitted and is pending admin approval.
+    </div>
+
+    <script>
+        let playerSelectedSide = null;
+      
+        const uid = localStorage.getItem("userid");
+       
+        let playerBetAmount = 0;
+        let currentCoinResult = null;
+        const recentGameResults = [];
+        // ⬇ Restore from localStorage if available
+const storedResults = JSON.parse(localStorage.getItem("recentGameResults") || "[]");
+recentGameResults.push(...storedResults.slice(0, 7)); // Keep max 7
+        
+        // ✅ Add the render function next
+function renderRecentWins(optionalNewResult = null) {
+  const historyList = document.getElementById('historyList');
+  if (!historyList) return;
+
+  // If new result is passed, update the array
+  if (optionalNewResult) {
+    recentGameResults.unshift(optionalNewResult);
+    if (recentGameResults.length > 7) recentGameResults.pop();
+    localStorage.setItem("recentGameResults", JSON.stringify(recentGameResults));
+  }
+
+  // Render the list
+  historyList.innerHTML = "";
+  recentGameResults.forEach(r => {
+    const li = document.createElement('li');
+    li.textContent = r === 'KING' ? '👑 King' : '👸 Queen';
+    li.style.fontSize = '22px';
+    li.style.fontWeight = 'bold';
+    li.style.color = r === 'KING' ? '#00ff00' : '#ffc0cb ';
+    historyList.appendChild(li);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const storedResults = JSON.parse(localStorage.getItem("recentGameResults") || "[]");
+  recentGameResults.push(...storedResults.slice(0, 7));
+  renderRecentWins(); // 🚫 Don't pass anything here
+});
+
+
+        function selectSide(side) {
+            if (currentPhase !== 'betting') return showMessage("Select only during betting phase", "error");
+            if (isBetPlaced) return showMessage("Bet already placed", "error");
+
+            playerSelectedSide = side;
+            document.getElementById('btnKing')?.classList.remove('selected');
+            document.getElementById('btnQueen')?.classList.remove('selected');
+            document.getElementById(`btn${side}`)?.classList.add('selected');
+        }
+        function changeBet(amount) {
+            const input = document.getElementById("bet");
+            let current = parseInt(input.value) || 0;
+            current += amount;
+            input.value = Math.max(50, Math.min(5000, current));
+        }
+        // Global variables for game and wallet balances
+
+        // Variables for daily limits
+        let dailyAddedAmount = 0;
+        let lastAddDate = new Date().toDateString();
+
+        let dailyWithdrawAmount = 0;
+        let withdrawCountToday = 0;
+        let lastWithdrawDate = new Date().toDateString();
+
+        // --- Game Cycle Timing ---
+        let gameInterval; // Holds the setInterval ID for the main game loop
+        let currentPhase = 'initial_cooldown'; // Start in a state before first betting
+        let timeRemainingInPhase = 0; // Seconds left in current phase
+
+        const BETTING_DURATION_SECONDS = 15;
+        const RESULT_DISPLAY_DURATION_SECONDS = 5;
+        const POST_RESULT_COOLDOWN_SECONDS = 0;
+
+        // Stores the side selected for the current round
+        let roundOutcome = null; // Stores the result of the current flip ('KING' or 'QUEEN')
+
+        // --- DOM Elements for the new timer ---
+        const gameTimerDisplay = document.getElementById('gameTimerDisplay');
+        const gamePhaseDisplay = document.getElementById('gamePhaseDisplay');
+        let totalBalance = 0;
+let depositedBalance = 0;    // Total approved deposit
+let totalBetSpent = 0; 
+function updateWalletDisplay(message = '') {
+  const wallet = document.getElementById('wallet');
+  if (!wallet) return;
+
+  wallet.innerHTML = `
+    Wallet: ₹${totalBalance}
+    ${message ? `<br><small>${message}</small>` : ''}
+  `;
+
+  updateBalanceDisplaysInOffcanvas();
+}
+
+
+            // if (extra) {
+            //     setTimeout(() => {
+            //         wallet.className = 'wallet';
+            //         wallet.innerHTML = `Wallet: ₹${totalBalance}
+            //             <br><small>(Winning: ₹${winningBalance} | Remaining: ₹${remainingBalance})</small>`;
+            //     }, 2000); // Reset class after 2 seconds
+            // }
+            // Crucially, update the offcanvas balances as well
+           
+        
+
+        // Function to update the balances displayed within the offcanvas menu
+        function updateBalanceDisplaysInOffcanvas() {
+    const walletBalanceAdd = document.getElementById('walletBalanceAdd');
+    const walletBalanceWithdraw = document.getElementById('walletBalanceWithdraw');
+
+
+    if (walletBalanceAdd) walletBalanceAdd.textContent = totalBalance;
+    if (walletBalanceWithdraw) walletBalanceWithdraw.textContent = totalBalance;
+    
+  }
+
+        // Initialize wallet display on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+  const uid = localStorage.getItem("userid");
+  if (!uid) return;
+
+  try {
+    // ✅ Fetch winning balance from backend
+    const res = await fetch(`http://3.111.47.237:3000/api/users/${uid}/balance`);
+    const data = await res.json();
+
+    if (res.ok && typeof data.balance === 'number') {
+      totalBalance = data.balance;
+    } else {
+      console.warn("⚠️ Could not fetch balance. Using 0.");
+      totalBalance = 0;
+    }
+
+    // Optional: Load deposited balance and totalBetSpent if needed from backend/localStorage
+
+  } catch (err) {
+    console.error("❌ Error fetching balance:", err);
+    totalBalance = 0;
+  }
+
+  updateWalletDisplay();
+  updateBalanceDisplaysInOffcanvas();
+  startGameCycle(); // Start the coin game
+});
+
+
+        // --- Bet Controls ---
+        function changeBet(amount) {
+            const betInput = document.getElementById('bet');
+            if (!betInput) {
+                console.error("Error: bet input element not found.");
+                return;
+            }
+            let currentBet = parseInt(betInput.value);
+            let newBet = currentBet + amount;
+            if (newBet < 10) newBet = 10; // Minimum bet
+            if (newBet > totalBalance) newBet = totalBalance; // Cannot bet more than total balance
+            betInput.value = newBet;
+        }
+
+        let isBetPlaced = false;
+
+
+        function selectSide(side) {
+            if (currentPhase !== 'betting') {
+                showMessage("You can only select a side during the betting phase.", "error");
+                return;
+            }
+            if (isBetPlaced) {
+                showMessage("You have already placed your bet for this round.", "error");
+                return;
+            }
+
+            playerSelectedSide = side;
+
+            // Get references to the buttons and safely remove 'selected' class
+            const btnKing = document.getElementById('btnKing');
+            const btnQueen = document.getElementById('btnQueen');
+
+            if (btnKing) {
+                btnKing.classList.remove('selected');
+            } else {
+                console.error("Error: btnKing element not found in selectSide.");
+            }
+            if (btnQueen) {
+                btnQueen.classList.remove('selected');
+            } else {
+                console.error("Error: btnQueen element not found in selectSide.");
+            }
+
+            // Add 'selected' class to the currently chosen button, with a safety check
+            const selectedBtn = document.getElementById(`btn${side}`);
+            if (selectedBtn) {
+                selectedBtn.classList.add('selected');
+            } else {
+                console.error(`Error: Button with ID 'btn${side}' not found when trying to select.`);
+            }
+
+            const resultDisplay = document.getElementById('result');
+            if (resultDisplay) {
+                resultDisplay.style.display = 'none';
+            }
+        }
+        // ✅ Add the following right after the two above:
+       function resetWinnings() {
+  // Not needed anymore — winnings logic removed
+  console.log("resetWinnings called but winnings tracking is removed.");
+}
+async function handleWin(amountWon) {
+  const uid = localStorage.getItem("userid");
+  if (!uid) return;
+
+  // ✅ Add winnings to total balance
+  totalBalance += amountWon;
+
+  try {
+    await fetch(`http://3.111.47.237:3000/api/users/${uid}/update-balance`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ balance: totalBalance })
+    });
+  } catch (err) {
+    console.error("❌ Failed to update balance on win:", err);
+  }
+
+  updateWalletDisplay();
+}
+
+        let currentBetId = null;
+async function placeBet() {
+  if (currentPhase !== 'betting') return showMessage("You can only place a bet during the betting phase.", "error");
+  if (isBetPlaced) return showMessage("You have already placed your bet for this round.", "error");
+  if (!playerSelectedSide) return showMessage("Please select a side (KING or QUEEN) first.", "error");
+
+  const betInput = document.getElementById('bet');
+  const amount = parseInt(betInput.value);
+  const userId = localStorage.getItem("userid");
+
+  if (!userId || isNaN(amount) || amount <= 0) {
+    return showMessage("❌ Invalid bet amount", "error");
+  }
+
+  if (amount > totalBalance) {
+    return showMessage("❌ Not enough balance to place this bet.", "error");
+  }
+
+  // ✅ Deduct directly from wallet
+  totalBalance -= amount;
+  localStorage.setItem(`totalBalance_${userId}`, totalBalance.toFixed(2));
+  await updateWalletDisplay();
+
+  try {
+    console.log("userId:", userId);
+  console.log("playerSelectedSide:", playerSelectedSide);
+  console.log("amount:", amount);
+
+  if (!userId || !playerSelectedSide || isNaN(amount)) {
+    console.error("❌ Invalid data being sent to backend");
+    return showMessage("❌ Something went wrong with your bet input.", "error");
+  }
+    const response = await fetch('http://3.111.47.237:3000/api/bets/place', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, betChoice: playerSelectedSide, amount })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.betId) {
+      return showMessage("❌ Bet failed. Please try again.", "error");
+    }
+
+    currentBetId = result.betId;
+    playerBetAmount = amount;
+    isBetPlaced = true;
+
+    localStorage.setItem("pendingBet", JSON.stringify({
+      betId: currentBetId,
+      userId,
+      side: playerSelectedSide,
+      amount,
+      placedAt: Date.now()
+    }));
+    localStorage.removeItem("pendingBetResolved");
+
+    showMessage(`Bet of ₹${amount} placed on ${playerSelectedSide}.`, "info");
+
+    // Disable inputs
+    document.getElementById('startButton')?.setAttribute('disabled', true);
+    document.getElementById('btnKing')?.setAttribute('disabled', true);
+    document.getElementById('btnQueen')?.setAttribute('disabled', true);
+    betInput.disabled = true;
+
+    // Optional backend balance verification (sync safety)
+    fetch(`http://3.111.47.237:3000/api/users/${userId}/balance`)
+      .then(res => res.json())
+      .then(data => {
+        if (typeof data.balance === "number") {
+          totalBalance = parseFloat(data.balance);
+          updateWalletDisplay();
+        }
+      });
+
+  } catch (err) {
+    console.error("❌ Error placing bet:", err);
+    showMessage("❌ Server error while placing bet.", "error");
+  }
+}
+
+
+       window.addEventListener("load", () => {
+  const pendingRaw = localStorage.getItem("pendingBet");
+  const alreadyResolved = localStorage.getItem("pendingBetResolved");
+
+  if (!pendingRaw || alreadyResolved === "true") {
+    startGameCycle();
+    return;
+  }
+
+  let pending;
+  try {
+    pending = JSON.parse(pendingRaw);
+  } catch (e) {
+    console.error("❌ Invalid pendingBet format:", e);
+    localStorage.removeItem("pendingBet");
+    startGameCycle();
+    return;
+  }
+
+  if (Date.now() - pending.placedAt > 30000) {
+    console.warn("⏰ Stale bet found. Skipping...");
+    localStorage.removeItem("pendingBet");
+    localStorage.removeItem("pendingBetResolved");
+    startGameCycle();
+    return;
+  }
+
+  const { betId, userId, side, amount } = pending;
+  console.log("⏪ Unresolved bet found. Resolving with animation...");
+
+  currentPhase = 'flipping';
+  timeRemainingInPhase = 5;
+  updateGameStatusDisplay();
+  disableControls(true);
+  showMessage("No more bets! Flipping coin...", "info");
+
+  const coinInner = document.getElementById('coinInner');
+  if (coinInner) {
+    coinInner.classList.remove('spin');
+    void coinInner.offsetWidth;
+    coinInner.classList.add('spin');
+    const rotation = side.toUpperCase() === 'KING' ? 7200 : 7380;
+    coinInner.style.transform = `rotateY(${rotation}deg)`;
+  }
+
+  setTimeout(() => {
+    fetch('http://3.111.47.237:3000/api/bets/resolve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, betId })
+    })
+    .then(async (res) => {
+      const data = await res.json();
+
+      if (!data?.result) {
+        console.warn("❌ Missing result from backend:", data);
+        showMessage("❌ Result unavailable", "error");
+        startGameCycle();
+        return;
+      }
+
+      localStorage.setItem("pendingBetResolved", "true");
+
+      const backendResult = data.result.toUpperCase();
+      const isWin = data.isWin;
+
+      // ✅ Update total balance if win
+      if (isWin && typeof data.updatedBalance === 'number') {
+        totalBalance = parseFloat(data.updatedBalance);
+        localStorage.setItem(`totalBalance_${userId}`, totalBalance.toFixed(2));
+      }
+
+      await updateWalletDisplay();
+
+      // ✅ Final animation and game cycle reset
+      if (coinInner) {
+        const finalRotation = backendResult === 'KING' ? 7200 : 7380;
+        coinInner.style.transform = `rotateY(${finalRotation}deg)`;
+      }
+
+      setTimeout(() => {
+        showFlipResult(backendResult, isWin, side, amount);
+        localStorage.removeItem("pendingBet");
+
+        currentPhase = 'display_result';
+        timeRemainingInPhase = 5;
+        updateGameStatusDisplay();
+
+        setTimeout(() => {
+          startGameCycle();
+        }, 5000);
+      }, 500);
+    })
+    .catch(err => {
+      console.error("❌ Bet resolve failed:", err);
+      showMessage("❌ Failed to resolve result.", "error");
+      startGameCycle();
+    });
+  }, 5000);
+});
+
+
+
+        // --- Coin Flip Logic ---
+
+        /**
+         * Determines the winning side based on the lowest total bet.
+         * If total bets are equal, a random side is chosen.
+         * @param {object} bets - An object containing arrays of bets for KING and QUEEN.
+         * Example: { KING: [{amount: 100, isPlayer: true}], QUEEN: [{amount: 200, isPlayer: false}] }
+         * @returns {string} The winning side ('KING' or 'QUEEN').
+         */
+        function determineWinningSide(bets) {
+            const totalKing = bets.KING.reduce((sum, bet) => sum + bet.amount, 0);
+            const totalQueen = bets.QUEEN.reduce((sum, bet) => sum + bet.amount, 0);
+
+            let winningSide;
+            let reasonDetail = `King Total: ₹${totalKing}, Queen Total: ₹${totalQueen}. `;
+
+            if (totalKing < totalQueen) {
+                winningSide = 'KING';
+                reasonDetail += `King had the lowest total bet.`;
+            } else if (totalQueen < totalKing) {
+                winningSide = 'QUEEN';
+                reasonDetail += `Queen had the lowest total bet.`;
+            } else {
+                winningSide = Math.random() < 0.5 ? 'KING' : 'QUEEN';
+                reasonDetail += `Total bets were equal. Winner chosen randomly as ${winningSide}.`;
+            }
+
+            console.log(`Winning Logic: ${reasonDetail}`);
+            return winningSide;
+        }
+        function flipCoin() {
+            const coinInner = document.getElementById('coinInner');
+            if (!coinInner) return console.error("❌ coinInner not found");
+
+            // Start coin spin animation
+            coinInner.classList.remove('spin');
+            void coinInner.offsetWidth;
+            coinInner.classList.add('spin');
+
+            // Simulate other players for animation only
+            const otherPlayerBetsKing = Array.from({ length: 2 }, () => ({
+                amount: (Math.floor(Math.random() * 5) + 1) * 100,
+                isPlayer: false
+            }));
+            const otherPlayerBetsQueen = Array.from({ length: 2 }, () => ({
+                amount: (Math.floor(Math.random() * 5) + 1) * 100,
+                isPlayer: false
+            }));
+
+            const currentRoundAllBets = {
+                KING: [...otherPlayerBetsKing],
+                QUEEN: [...otherPlayerBetsQueen]
+            };
+
+            // Include actual user bet
+            if (isBetPlaced && playerSelectedSide) {
+                currentRoundAllBets[playerSelectedSide.toUpperCase()].push({
+                    amount: playerBetAmount,
+                    isPlayer: true
+                });
+            }
+
+            // Simulate temporary outcome just for spin
+            roundOutcome = determineWinningSide(currentRoundAllBets);
+            const spinDirection = roundOutcome === 'KING' ? 7200 : 7380;
+            coinInner.style.transform = `rotateY(${spinDirection}deg)`;
+
+            // Now resolve with backend after animation delay
+            setTimeout(() => {
+                const userId = localStorage.getItem("userid");
+                if (!userId || !currentBetId) {
+                    console.error("❌ Missing userId or betId:", { userId, currentBetId });
+                    return;
+                }
+
+                fetch('http://3.111.47.237:3000/api/bets/resolve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, betId: currentBetId })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log("🎯 Backend Resolve Response:", data);
+
+                        const backendResult = data.result?.toUpperCase(); // KING or QUEEN
+                        const isWin = data.isWin;
+
+                        if (!backendResult) {
+                            showMessage("❌ Server error: Missing result.", "error");
+                            return;
+                        }
+
+                        // Re-spin coin based on actual result
+                        const finalRotationY = backendResult === 'KING' ? 7200 : 7380;
+                        coinInner.style.transform = `rotateY(${finalRotationY}deg)`;
+
+                        setTimeout(() => {
+                            // Update wallet
+                            if (typeof data.updatedBalance === "number") {
+                                totalBalance = data.updatedBalance;
+                                localStorage.setItem(`totalBalance_${userId}`, totalBalance.toFixed(2));
+                                updateWalletDisplay();
+                            }
+
+                            // ✅ Show result and update history
+                            showFlipResult(backendResult, isWin);
+
+                            // Reset game state
+                            playerBetAmount = 0;
+                            playerSelectedSide = null;
+                            isBetPlaced = false;
+                            currentBetId = null;
+
+                            document.getElementById('btnKing')?.classList.remove('selected');
+                            document.getElementById('btnQueen')?.classList.remove('selected');
+                        }, 300); // Slight delay after final spin
+                    })
+                    .catch(err => {
+                        console.error("❌ Failed to resolve bet:", err);
+                        showMessage("❌ Failed to resolve result. Try again.", "error");
+                    });
+
+            }, 5000); // Wait for spin animation
+        }
+
+
+     function showFlipResult(result, isWin, betSide = playerSelectedSide, betAmount = playerBetAmount) {
+  localStorage.setItem("pendingBetResolved", "true");
+  localStorage.removeItem("pendingBet");
+
+  const resultDisplay = document.getElementById('result');
+  const historyList = document.getElementById('historyList');
+  if (!historyList || !resultDisplay) return;
+
+  const normalizedBetSide = betSide?.toUpperCase?.() || '';
+  const selectedSymbol = normalizedBetSide === 'KING' ? '♚' : '♛';
+  const resultSymbol = result === 'KING' ? '♚' : '♛';
+  const message = `Result: ${result}! ${isWin ? 'You WON!' : 'You LOST!'}`;
+  const cssClass = isWin ? 'win' : 'lose';
+
+  // 🧠 Was this bet from winnings?
+  
+
+  // ✅ Wallet update logic
+  if (isWin && betAmount > 0) {
+    const winAmount = betAmount * 2;
+    totalBalance += winAmount;
+    localStorage.setItem("totalBalance_" + localStorage.getItem("userid"), totalBalance.toFixed(2));
+  }
+  updateWalletDisplay();
+
+  // ✅ Maintain last 7 outcomes
+  recentGameResults.unshift(result);
+  if (recentGameResults.length > 7) recentGameResults.pop();
+  localStorage.setItem("recentGameResults", JSON.stringify(recentGameResults));
+
+
+  // ✅ Render outcomes as 👑 or 👸
+  historyList.innerHTML = "";
+  recentGameResults.forEach(r => {
+    const li = document.createElement('li');
+    li.textContent = r === 'KING' ? '👑 King' : '👸 Queen';
+    li.style.fontSize = '22px';
+    li.style.fontWeight = 'bold';
+    li.style.color = r === 'KING' ? '#00ff00 ' : '#ffc0cb';
+    historyList.appendChild(li);
+  });
+
+  // ✅ Log transaction only if user placed a bet
+  if (betSide && betAmount > 0) {
+    addTransaction({
+      id: generateTransactionID(),
+      type: isWin ? 'Game Win' : 'Game Bet',
+      amount: betAmount,
+      balance: totalBalance,
+      status: isWin ? 'Completed (Win)' : 'Completed (Loss)',
+      action: `Played ${normalizedBetSide}`
+    });
+  }
+
+  showMessage(message, cssClass);
+
+  setTimeout(() => {
+    currentPhase = 'cooldown';
+    timeRemainingInPhase = POST_RESULT_COOLDOWN_SECONDS;
+    updateGameStatusDisplay();
+    disableControls(true);
+    startGameCycle();
+  }, 3000);
+}
+
+        function showMessage(msg, type = "info") {
+            const resultDisplay = document.getElementById('result');
+            if (!resultDisplay) {
+                console.error("Error: resultDisplay element not found in showMessage.");
+                return;
+            }
+            resultDisplay.textContent = `${type === "error" ? 'Error: ' : ''}${msg}`;
+            resultDisplay.style.display = 'block';
+
+            resultDisplay.style.color =
+                type === "win" ? '#00ff99' :
+                    type === "lose" || type === "error" ? '#ff6666' :
+                        '#FFD700'; // info (default gold)
+        }
+
+        function clearMessage() {
+            const resultDisplay = document.getElementById('result');
+            if (resultDisplay) {
+                resultDisplay.style.display = 'none';
+                resultDisplay.textContent = '';
+            } else {
+                console.error("Error: resultDisplay element not found in clearMessage.");
+            }
+        }
+
+
+
+        function startGameCycle() {
+            console.log("🌀 Game cycle restarting...");
+            clearInterval(gameInterval);
+            timeRemainingInPhase = POST_RESULT_COOLDOWN_SECONDS;
+            currentPhase = 'initial_cooldown';
+            updateGameStatusDisplay();
+            disableControls(true);
+            clearMessage();
+
+            const coinInner = document.getElementById('coinInner');
+            if (coinInner) coinInner.style.transform = 'rotateY(0deg)';
+
+            gameInterval = setInterval(() => {
+                timeRemainingInPhase--;
+                if (timeRemainingInPhase <= 0) handlePhaseChange();
+                updateGameStatusDisplay();
+            }, 1000);
+        }
+
+       function handlePhaseChange() {
+    switch (currentPhase) {
+        case 'initial_cooldown':
+        case 'cooldown':
+            currentPhase = 'betting';
+            timeRemainingInPhase = BETTING_DURATION_SECONDS;
+            disableControls(false);
+            showMessage("Place your bets!", "info");
+            break;
+
+        case 'betting':
+            currentPhase = 'flipping';
+            timeRemainingInPhase = 5;
+            disableControls(true);
+            showMessage("No more bets! Flipping coin...", "info");
+
+            // ✅ Generate and store result for this round
+            const result = Math.random() < 0.5 ? 'KING' : 'QUEEN';
+            roundOutcome = result; // 🔐 store globally
+
+            // ✅ Trigger coin animation
+            flipCoin();
+            break;
+
+        case 'flipping':
+            currentPhase = 'display_result';
+            timeRemainingInPhase = RESULT_DISPLAY_DURATION_SECONDS;
+            break;
+
+        case 'display_result':
+            currentPhase = 'cooldown';
+            timeRemainingInPhase = POST_RESULT_COOLDOWN_SECONDS;
+            clearMessage();
+
+            const coinInner = document.getElementById('coinInner');
+            if (coinInner) coinInner.style.transform = 'rotateY(0deg)';
+
+            // ✅ Show result in result section even if no bet
+            const resultDisplay = document.getElementById('result');
+            if (resultDisplay && roundOutcome) {
+                resultDisplay.textContent = `Result: ${roundOutcome}!`;
+                resultDisplay.style.display = 'block';
+                resultDisplay.style.color = roundOutcome === 'KING' ? '#00ff00' : '#ffc0cb';
+            }
+
+            // ✅ Update Recent Wins
+            renderRecentWins(roundOutcome);
+            break;
+    }
+}
+
+        function updateGameStatusDisplay() {
+            const phaseTextMap = {
+                'initial_cooldown': 'Game starting soon!',
+                'betting': 'Place your bets!',
+                'flipping': 'Coin is flipping!',
+                'display_result': 'Results are in!',
+                'cooldown': 'Next round soon!'
+            };
+
+            if (gamePhaseDisplay) {
+                gamePhaseDisplay.textContent = `Phase: ${phaseTextMap[currentPhase] || 'Unknown'}`;
+            } else {
+                console.error("Error: gamePhaseDisplay element not found in updateGameStatusDisplay.");
+            }
+
+            if (gameTimerDisplay) {
+                gameTimerDisplay.textContent = `Time Left: ${timeRemainingInPhase}s`;
+            } else {
+                console.error("Error: gameTimerDisplay element not found in updateGameStatusDisplay.");
+            }
+        }
+
+        function disableControls(disable) {
+            const betInput = document.getElementById('bet');
+            const btnKing = document.getElementById('btnKing');
+            const btnQueen = document.getElementById('btnQueen');
+            const startButton = document.getElementById('startButton');
+            const betControlMinus = document.querySelector('.bet-controls button:first-child');
+            const betControlPlus = document.querySelector('.bet-controls button:last-child');
+
+            if (betInput) betInput.disabled = disable;
+            if (btnKing) btnKing.disabled = disable;
+            if (btnQueen) btnQueen.disabled = disable;
+            if (startButton) startButton.disabled = disable;
+            if (betControlMinus) betControlMinus.disabled = disable;
+            if (betControlPlus) betControlPlus.disabled = disable;
+        }
+
+function showPopup(message, color = '#f44336') {
+  let popup = document.getElementById('popupMessage');
+  if (!popup) {
+    popup = document.createElement('div');
+    popup.id = 'popupMessage';
+    popup.style.position = 'fixed';
+    popup.style.top = '20px';
+    popup.style.left = '50%';
+    popup.style.transform = 'translateX(-50%)';
+    popup.style.backgroundColor = color;
+    popup.style.color = 'white';
+    popup.style.padding = '12px 20px';
+    popup.style.borderRadius = '6px';
+    popup.style.fontWeight = 'bold';
+    popup.style.zIndex = '9999';
+    popup.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+    popup.style.transition = 'opacity 0.5s';
+    document.body.appendChild(popup);
+  }
+
+  popup.textContent = message;
+  popup.style.backgroundColor = color;
+  popup.style.display = 'block';
+  popup.style.opacity = '1';
+
+  setTimeout(() => {
+    popup.style.opacity = '0';
+    setTimeout(() => {
+      popup.style.display = 'none';
+      popup.style.opacity = '1';
+    }, 500);
+  }, 3000);
+}
+
+     document.getElementById('addBalanceForm').addEventListener('submit', async function (event) {
+  event.preventDefault();
+
+  const userId = localStorage.getItem("userid");
+
+  const addAmountInput = document.getElementById('addAmount');
+  const screenshotUpload = document.getElementById('screenshotUpload');
+  const transactionIdInput = document.getElementById("transactionId");
+  const transactionId = transactionIdInput?.value?.trim();
+
+  const amountToAdd = parseInt(addAmountInput.value);
+  const addSuccessMessage = document.getElementById('addBalanceSuccessMessage');
+  const addErrorMessage = document.getElementById('addBalanceErrorMessage');
+  const popup = document.getElementById('balanceAddedOnPagePopup');
+
+  // Reset messages
+  addSuccessMessage.style.display = 'none';
+  addErrorMessage.style.display = 'none';
+  addSuccessMessage.textContent = '';
+  addErrorMessage.textContent = '';
+
+  // Daily limit logic
+  const today = new Date().toDateString();
+  if (today !== lastAddDate) {
+    dailyAddedAmount = 0;
+    lastAddDate = today;
+  }
+
+  const MIN_ADD_AMOUNT = 100;
+  const MAX_ADD_AMOUNT = 5000;
+  const MAX_DAILY_ADD_AMOUNT = 10000;
+
+  if (isNaN(amountToAdd) || amountToAdd < MIN_ADD_AMOUNT || amountToAdd > MAX_ADD_AMOUNT) {
+    addErrorMessage.textContent = `Please enter an amount between ₹${MIN_ADD_AMOUNT} and ₹${MAX_ADD_AMOUNT}.`;
+    addErrorMessage.style.display = 'block';
+    return;
+  }
+
+  if (dailyAddedAmount + amountToAdd > MAX_DAILY_ADD_AMOUNT) {
+    addErrorMessage.textContent = `Daily add limit of ₹${MAX_DAILY_ADD_AMOUNT} exceeded. You have added ₹${dailyAddedAmount} today.`;
+    addErrorMessage.style.display = 'block';
+    return;
+  }
+
+  const file = screenshotUpload.files[0];
+  if (!file || !file.name.match(/\.(jpg|jpeg)$/i)) {
+    addErrorMessage.textContent = "Please upload a JPG/JPEG screenshot.";
+    addErrorMessage.style.display = 'block';
+    return;
+  }
+
+  // ✅ Transaction ID must be 6 to 12 digits
+  if (!transactionId || !/^\d{6,12}$/.test(transactionId)) {
+    addErrorMessage.textContent = "Transaction ID must be 6 to 12 digits.";
+    addErrorMessage.style.display = 'block';
+    return;
+  }
+
+  // ✅ Prepare FormData
+  const formData = new FormData();
+  formData.append("user_id", userId);
+  formData.append("amount", amountToAdd);
+  formData.append("transaction_id", transactionId);
+  formData.append("screenshot", file);
+
+  try {
+    const response = await fetch("http://3.111.47.237:3000/api/admin/add-balance", {
+      method: "POST",
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      if (result.message?.toLowerCase().includes("transaction")) {
+        showPopup("❌ This Transaction ID is already entered.");
+        return;
+      }
+      throw new Error(result.message || "Server error");
+    }
+
+    dailyAddedAmount += amountToAdd;
+
+    // ✅ Show success message
+    addSuccessMessage.textContent = '✅ Your request has been submitted and is pending admin approval.';
+    addSuccessMessage.style.display = 'block';
+    addSuccessMessage.style.background = 'green';
+    addSuccessMessage.style.color = 'black';
+    addSuccessMessage.style.padding = '10px';
+    addSuccessMessage.style.borderRadius = '5px';
+
+    setTimeout(() => {
+      addSuccessMessage.style.display = 'none';
+      addSuccessMessage.textContent = '';
+    }, 3000);
+
+    // ✅ Get actual wallet balance before adding transaction
+    let currentBalance = 0;
+
+    if (userId) {
+      try {
+        const walletRes = await fetch(`http://3.111.47.237:3000/api/users/${userId}/balance`);
+        if (walletRes.ok) {
+          const walletData = await walletRes.json();
+          if (walletData && typeof walletData.balance === 'number') {
+            currentBalance = walletData.balance;
+          }
+        } else {
+          console.warn("⚠️ Wallet fetch failed:", await walletRes.text());
+        }
+      } catch (walletErr) {
+        console.warn("⚠️ Could not fetch wallet balance:", walletErr.message);
+      }
+    }
+
+    // ✅ Add transaction to history immediately
+    addTransaction?.({
+      id: result.requestId || generateTransactionID(),
+      type: 'Deposit Request',
+      amount: amountToAdd,
+      balance: totalBalance,
+      status: 'Pending',
+      action: `<button onclick="alert('Awaiting admin approval')">View</button>`
+    });
+
+    // ✅ Optional popup
+    if (popup) {
+      popup.textContent = addSuccessMessage.textContent;
+      popup.style.display = 'block';
+      popup.classList.remove('hidden');
+      setTimeout(() => {
+        popup.classList.add('hidden');
+        setTimeout(() => {
+          popup.style.display = 'none';
+        }, 500);
+      }, 3000);
+    }
+
+    // ✅ Reset form
+    addAmountInput.value = '';
+    transactionIdInput.value = '';
+    screenshotUpload.value = '';
+    updateWalletDisplay?.();
+
+  } catch (err) {
+    console.error("Balance add failed:", err);
+    addErrorMessage.textContent = "❌ " + err.message;
+    addErrorMessage.style.display = 'block';
+  }
+});
+
+
+
+
+      document.getElementById('withdrawForm').addEventListener('submit', async function (event) {
+  event.preventDefault();
+
+  // Inputs
+  const accountHolder = document.getElementById('accountHolder')?.value.trim();
+  const accountNumber = document.getElementById('accountNumber')?.value.trim();
+  const ifscCode = document.getElementById('ifscCode')?.value.trim().toUpperCase();
+  const withdrawAmount = parseInt(document.getElementById('withdrawAmount')?.value) || 0;
+
+  // UI Elements
+  const withdrawSuccessMessage = document.getElementById('withdrawSuccessMessage');
+  const withdrawErrorMessage = document.getElementById('withdrawErrorMessage');
+  const popupMessageWithdraw = document.getElementById('popupMessageWithdraw');
+
+  // Hide all messages first
+  withdrawSuccessMessage.style.display = 'none';
+  withdrawErrorMessage.style.display = 'none';
+  withdrawSuccessMessage.textContent = '';
+  withdrawErrorMessage.textContent = '';
+  if (popupMessageWithdraw) popupMessageWithdraw.style.display = 'none';
+
+  const userId = localStorage.getItem("userid");
+  if (!userId) {
+    withdrawErrorMessage.textContent = 'User not logged in.';
+    withdrawErrorMessage.style.display = 'block';
+    return;
+  }
+
+  // ✅ Fetch wallet balance and winnings
+  let freshWinnings = 0;
+  try {
+    const res = await fetch(`http://3.111.47.237:3000/api/users/${userId}/balance`);
+    const data = await res.json();
+    freshWinnings = parseFloat(data?.winnings_balance || 0);
+    totalBalance = parseFloat(data?.balance || 0);
+    remainingBalance = totalBalance - freshWinnings;
+  } catch (err) {
+    console.error("❌ Error fetching wallet info:", err);
+    withdrawErrorMessage.textContent = "❌ Failed to fetch balance.";
+    withdrawErrorMessage.style.display = 'block';
+    return;
+  }
+
+  // ✅ Validations
+  if (!accountHolder || !accountNumber || !ifscCode) {
+    withdrawErrorMessage.textContent = 'Please fill in all account details.';
+    withdrawErrorMessage.style.display = 'block';
+    return;
+  }
+
+  if (!/^\d{9,18}$/.test(accountNumber)) {
+    withdrawErrorMessage.textContent = 'Account Number must be between 9 and 18 digits.';
+    withdrawErrorMessage.style.display = 'block';
+    return;
+  }
+
+  if (!/^[A-Za-z]{4}\d{7}$/.test(ifscCode)) {
+    withdrawErrorMessage.textContent = 'IFSC Code format is invalid (e.g., SBIN0000123).';
+    withdrawErrorMessage.style.display = 'block';
+    return;
+  }
+
+  const MIN_WITHDRAW = 100;
+  const MAX_WITHDRAW = 5000;
+
+  if (withdrawAmount < MIN_WITHDRAW || withdrawAmount > MAX_WITHDRAW) {
+    withdrawErrorMessage.textContent = `Withdrawal must be between ₹${MIN_WITHDRAW} and ₹${MAX_WITHDRAW}.`;
+    withdrawErrorMessage.style.display = 'block';
+    return;
+  }
+
+  if (withdrawAmount > freshWinnings) {
+    withdrawErrorMessage.textContent = `❌ You can only withdraw from winnings. Available winnings: ₹${freshWinnings}`;
+    withdrawErrorMessage.style.display = 'block';
+    // ⏳ Auto-hide after 3 seconds
+  setTimeout(() => {
+    withdrawErrorMessage.style.display = 'none';
+    withdrawErrorMessage.textContent = '';
+  }, 3000);
+    return;
+  }
+
+  // ✅ Send request
+  try {
+    const res = await fetch("http://3.111.47.237:3000/api/withdraw/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+        amount: withdrawAmount,
+        account_number: accountNumber,
+        ifsc_code: ifscCode
+      })
+    });
+
+    const result = await res.json();
+
+    if (res.ok && result?.message?.includes("✅")) {
+      withdrawSuccessMessage.textContent = `✅ ₹${withdrawAmount} withdrawal request submitted successfully.`;
+      withdrawSuccessMessage.style.display = 'block';
+
+      if (popupMessageWithdraw) {
+        popupMessageWithdraw.textContent = "Withdrawals will be processed within 10 minutes to 24 hours.";
+        popupMessageWithdraw.style.display = 'block';
+      }
+
+      document.getElementById('withdrawForm').reset();
+
+      addTransaction({
+        id: result?.id || generateTransactionID(),
+        type: 'Withdraw',
+        amount: withdrawAmount,
+        balance: totalBalance,
+        status: 'Pending',
+        created_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
+      });
+
+      await updateWalletDisplay();
+
+      setTimeout(() => {
+        withdrawSuccessMessage.style.display = 'none';
+        if (popupMessageWithdraw) popupMessageWithdraw.style.display = 'none';
+      }, 5000);
+    } else {
+      withdrawErrorMessage.textContent = result.message || "❌ Withdrawal failed.";
+      withdrawErrorMessage.style.display = 'block';
+    }
+
+  } catch (err) {
+    console.error("❌ Withdrawal request error:", err);
+    withdrawErrorMessage.textContent = "❌ Server error during withdrawal.";
+    withdrawErrorMessage.style.display = 'block';
+  }
+});
+
+
+
+        // ✅ Reset Winnings Correctly
+
+
+
+        // --- Transaction History ---
+        // --- Store Transactions ---
+let transactions = [
+  // Example dummy data for testing
+  { id: 'TXN001', type: 'Deposit Request', amount: 500, balance: 500, status: 'Approved', action: '' },
+  { id: 'TXN002', type: 'Withdrawal', amount: 200, balance: 300, status: 'Pending', action: '' },
+];
+
+// --- Generate Transaction ID ---
+function generateTransactionID() {
+  return 'TRX' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000);
+}
+
+// --- Add Transaction ---
+function addTransaction(transaction) {
+  transactions.unshift(transaction); // Add to beginning
+  renderTransactions(); // Re-render
+}
+
+// --- Render Transactions ---
+function renderTransactions(filtered = transactions) {
+  const tableBody = document.getElementById('transactionTableBody');
+  tableBody.innerHTML = '';
+
+  const relevantTransactions = filtered
+    .filter(tx =>
+      ['withdraw', 'withdrawal', 'deposit', 'deposit request'].includes(tx.type?.toLowerCase().trim())
+    )
+    .slice(0, 10);
+
+  if (relevantTransactions.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">No transaction history found.</td></tr>`;
+    return;
+  }
+
+  relevantTransactions.forEach((tx, index) => {
+    const row = tableBody.insertRow();
+
+    const typeLower = tx.type?.toLowerCase().trim();
+    const statusLower = tx.status?.toLowerCase().trim();
+
+    const typeDisplay = (typeLower === 'withdraw' || typeLower === 'withdrawal')
+      ? 'Withdrawal'
+      : (typeLower === 'deposit' || typeLower === 'deposit request')
+      ? 'Deposit Request'
+      : tx.type;
+
+    row.insertCell().textContent = index + 1;
+    row.insertCell().textContent = typeDisplay;
+    row.insertCell().textContent = `₹${tx.amount}`;
+    row.insertCell().textContent = (typeDisplay === 'Deposit Request' && statusLower === 'pending')
+      ? '—'
+      : `₹${tx.balance || '—'}`;
+
+    // ✅ Status badge
+    const statusCell = row.insertCell();
+    const statusSpan = document.createElement('span');
+    statusSpan.textContent = tx.status || '—';
+    statusSpan.style.padding = '4px 10px';
+    statusSpan.style.borderRadius = '12px';
+    statusSpan.style.fontSize = '0.85em';
+    statusSpan.style.fontWeight = 'bold';
+
+    if (statusLower === 'pending') {
+      statusSpan.style.background = '#ffc107'; // Yellow
+      statusSpan.style.color = '#000';
+    } else if (statusLower.includes('approved')) {
+      statusSpan.style.background = '#4caf50'; // Green
+      statusSpan.style.color = '#fff';
+    } else if (statusLower.includes('rejected') || statusLower.includes('cancelled')) {
+      statusSpan.style.background = '#f44336'; // Red
+      statusSpan.style.color = '#fff';
+    } else {
+      statusSpan.style.background = '#607d8b'; // Grey
+      statusSpan.style.color = '#fff';
+    }
+
+    statusCell.appendChild(statusSpan);
+
+    // ✅ Created At
+    row.insertCell().textContent = tx.created_at || '—';
+
+    // ✅ Action Buttons
+    const actionCell = row.insertCell();
+    const isWithdrawPending = (typeLower === 'withdraw' || typeLower === 'withdrawal') && statusLower === 'pending';
+
+if (isWithdrawPending) {
+  const cancelButton = document.createElement('button');
+  cancelButton.textContent = 'Cancel';
+  cancelButton.style.cssText = `
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  `;
+  cancelButton.onclick = () => cancelTransaction(tx.id);
+  actionCell.appendChild(cancelButton);
+} else {
+  actionCell.textContent = 'N/A';
+}
+
+  });
+}
+
+
+
+// --- Cancel Transaction ---
+function cancelTransaction(transactionId) {
+  const index = transactions.findIndex(t => t.id === transactionId);
+  if (index === -1) {
+    showMessage("❌ Transaction not found.", "error");
+    return;
+  }
+
+  const tx = transactions[index];
+  const typeLower = tx.type?.toLowerCase().trim();
+  const statusLower = tx.status?.toLowerCase().trim();
+
+  if ((typeLower === 'withdraw' || typeLower === 'withdrawal') && statusLower === 'pending') {
+    if (!confirm("Are you sure you want to cancel this withdrawal?")) return;
+
+    fetch(`http://3.111.47.237:3000/api/withdraw/cancel/${transactionId}`, {
+      method: "POST"
+    })
+      .then(res => res.json())
+      .then(data => {
+        showMessage(data.message, "info");
+
+        // Update local transaction status
+        tx.status = "Cancelled";
+        tx.balance += tx.amount;
+
+        // Refresh transaction list
+        renderTransactions();
+
+        // Refresh wallet display if available
+        if (typeof updateWalletDisplay === 'function') {
+          updateWalletDisplay();
+        }
+      })
+      .catch(err => {
+        console.error("❌ Error cancelling withdrawal:", err);
+        showMessage("❌ Server error while cancelling withdrawal.", "error");
+      });
+  } else {
+    showMessage("❌ Cannot cancel this transaction.", "error");
+  }
+}
+
+
+
+// --- Search Transactions ---
+function searchTransactions() {
+  const input = document.getElementById('searchInput');
+  const filter = input.value.toLowerCase();
+
+  const filtered = transactions.filter(tx =>
+    (tx.type?.toLowerCase() === 'deposit request' || tx.type?.toLowerCase() === 'withdraw') &&
+    (
+      tx.id?.toLowerCase().includes(filter) ||
+      tx.type?.toLowerCase().includes(filter) ||
+      tx.status?.toLowerCase().includes(filter) ||
+      tx.amount?.toString().includes(filter)
+    )
+  );
+
+  renderTransactions(filtered.slice(0, 10));
+}
+
+
+
+        function logout() {
+            console.log('User logged out.');
+            // In a real application, you'd also send a request to your server to invalidate the session.
+            // For this example, we'll just clear local storage and reload.
+            localStorage.clear();
+  sessionStorage.clear();
+  setTimeout(() => {
+    window.location.href = "/frontend/coin-king-home.html";
+  }, 100);
+}
+
+        // 
+
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const userId = localStorage.getItem("userid");
+
+            if (!userId) {
+                alert("No user logged in.");
+                   window.location.href = "/frontend/coin-king-home.html";
+                return;
+            }
+
+            // ✅ Load Profile Details
+            fetch(`http://3.111.47.237:3000/api/users/${userId}`)
+                .then(res => res.json())
+                .then(user => {
+                    document.getElementById("profileUsername").textContent = user.username;
+                    document.getElementById("profilePhone").textContent = user.phone;
+                    document.getElementById("profileEmail").textContent = user.email;
+                })
+                .catch(err => {
+                    console.error("Failed to load profile:", err);
+                });
+
+            updateWalletDisplay(); // ✅ Load balance initially
+
+        });
+
+        // ✅ Wallet Balance Updater
+      // ✅ Wallet Balance Updater
+async function updateWalletDisplay() {
+  const userId = localStorage.getItem("userid");
+  if (!userId) return;
+
+  try {
+    const res = await fetch(`http://3.111.47.237:3000/api/users/${userId}/balance`);
+    const data = await res.json();
+
+    if (res.ok && typeof data.balance === "number") {
+      totalBalance = parseFloat(data.balance);
+
+      // ✅ Store total balance only
+      localStorage.setItem(`totalBalance_${userId}`, totalBalance.toFixed(2));
+
+      // ✅ Main Wallet UI
+      const walletDiv = document.getElementById("wallet");
+      if (walletDiv) {
+        walletDiv.textContent = `Wallet: ₹${totalBalance.toFixed(2)}`;
+      }
+
+      // ✅ Offcanvas wallet updates
+      const walletBalanceAdd = document.getElementById("walletBalanceAdd");
+      if (walletBalanceAdd) walletBalanceAdd.textContent = totalBalance.toFixed(2);
+
+      const walletBalanceWithdraw = document.getElementById("walletBalanceWithdraw");
+      if (walletBalanceWithdraw) walletBalanceWithdraw.textContent = totalBalance.toFixed(2);
+    }
+
+  } catch (err) {
+    console.error("❌ Error loading wallet balance:", err);
+  }
+}
+
+
+
+       
+
+        // ✅ Handle Withdraw Form Submit
+        // ✅ Handle Withdraw Form Submit
+
+
+        async function loadTransactionHistory() {
+            const userId = localStorage.getItem("userid");
+            if (!userId) {
+                console.error("❌ No user_id in localStorage.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`http://3.111.47.237:3000/api/transactions/${userId}`);
+                const data = await res.json();
+
+                // Sort by id ASC to make S.No = 1 oldest
+                data.sort((a, b) => b.id - a.id);
+
+                const tbody = document.getElementById("transactionTableBody");
+                tbody.innerHTML = "";
+
+                data.forEach((tx, index) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+        <td>${index + 1}</td>                       <!-- Transaction ID -->
+        <td>${tx.type}</td>                     <!-- Type -->
+        <td>₹${tx.amount}</td>                  <!-- Amount -->
+        <td>₹${tx.balance}</td>                 <!-- Balance -->
+        <td>${tx.status}</td>                   <!-- Status -->
+        <td>${tx.created_at || '-'}</td>        <!-- Created At -->
+      `;
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error("⚠️ Fetch failed:", err);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadTransactionHistory);
+
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const summaries = document.querySelectorAll("summary.nav-link");
+
+            summaries.forEach(summary => {
+                if (summary.textContent.includes("Transaction History")) {
+                    summary.addEventListener("click", () => {
+                        const section = document.getElementById("transactionHistorySection");
+
+                        if (!section.dataset.loaded) {
+                            const currentUserId = localStorage.getItem("userid");
+
+                            if (!currentUserId) {
+                                console.warn("⚠️ No user ID in localStorage.");
+                                return;
+                            }
+
+                            loadTransactionHistory(currentUserId); // ✅ Use dynamic ID
+                            section.dataset.loaded = "true";
+                        }
+                    });
+                }
+            });
+        });
+
+
+        // This function should be called right after a game round finishes
+        // and the winner is determined.
+
+
+        // async function loadGameProfitSummary() {
+        //   const tableBody = document.getElementById("gameSummaryTableBody");
+        //   const message = document.getElementById("gameSummaryMessage");
+
+        //   tableBody.innerHTML = "";
+        //   message.textContent = "";
+
+        //   try {
+        //     const res = await fetch("http://localhost:3000/api/summary/minute-wise");
+        //     const data = await res.json();
+
+        //     if (!Array.isArray(data)) {
+        //       message.textContent = "⚠️ No game summaries available.";
+        //       return;
+        //     }
+
+        //     if (data.length === 0) {
+        //       message.textContent = "⚠️ No profit data yet.";
+        //       return;
+        //     }
+
+        //     data.forEach(row => {
+        //       const tr = document.createElement("tr");
+        //       tr.innerHTML = `
+        //         <td>${row.minute}</td>
+        //         <td>${row.users_played}</td>
+        //         <td>₹${row.king_bets}</td>
+        //         <td>₹${row.queen_bets}</td>
+        //         <td>${row.result}</td>
+        //         <td>₹${row.profit}</td>
+        //       `;
+        //       tableBody.appendChild(tr);
+        //     });
+        //   } catch (err) {
+        //     console.error("❌ Failed to load profit summary:", err);
+        //     message.textContent = "❌ Error loading game profit summary.";
+        //   }
+        // }
+
+        // // Auto-load summary on page ready
+        // document.addEventListener("DOMContentLoaded", () => {
+        //   loadGameProfitSummary();
+        // });
+        async function fetchAndSetWalletBalance() {
+  const userId = localStorage.getItem("userid");
+  if (!userId) {
+    console.warn("❌ No 'userid' found in localStorage.");
+    return;
+  }
+
+  console.log("📡 Fetching wallet for user:", userId);
+
+  try {
+    const res = await fetch(`http://3.111.47.237:3000/api/users/${userId}/balance`);
+    const data = await res.json();
+
+    console.log("✅ Wallet API response:", data);
+
+    if (res.ok && data && typeof data.balance === "number") {
+      const totalBalance = parseFloat(data.balance);
+
+      // ✅ Update all wallet locations
+      const walletDiv = document.getElementById("wallet");
+      if (walletDiv) walletDiv.textContent = `Wallet: ₹${totalBalance.toFixed(2)}`;
+
+      const walletAdd = document.getElementById("walletBalanceAdd");
+      if (walletAdd) walletAdd.textContent = totalBalance.toFixed(2);
+
+      const walletWithdraw = document.getElementById("walletBalanceWithdraw");
+      if (walletWithdraw) walletWithdraw.textContent = totalBalance.toFixed(2);
+
+      // ❌ Remove old "Winning" balance section if it exists
+      const winningDiv = document.getElementById("winningBalance");
+      if (winningDiv) winningDiv.remove();
+
+      // ✅ Store for later use
+      window.totalBalance = totalBalance;
+      localStorage.setItem(`totalBalance_${userId}`, totalBalance.toFixed(2));
+    } else {
+      console.warn("⚠️ Invalid wallet data received from API.");
+    }
+  } catch (err) {
+    console.error("❌ Error fetching wallet balance:", err);
+  }
+}
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const summaries = document.querySelectorAll("summary.nav-link");
+
+            summaries.forEach(summary => {
+                summary.addEventListener("click", () => {
+                    const section = summary.textContent.trim();
+
+                    // ✅ Reload wallet only when Add Balance or Withdraw is clicked
+                    if (section.includes("Add Balance") || section.includes("Withdraw")) {
+                        fetchAndSetWalletBalance();
+                    }
+                });
+            });
+
+            // ✅ Also call it once on page load for top wallet
+            fetchAndSetWalletBalance();
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const userId = localStorage.getItem("userid");
+
+            if (!userId) {
+                alert("No user logged in.");
+                  window.location.href = "/frontend/coin-king-home.html";
+                return;
+            }
+
+            // Fetch user profile
+            fetch(`http://3.111.47.237:3000/api/users/${userId}`)
+                .then(res => res.json())
+                .then(user => {
+                    document.getElementById("profileUsername").textContent = user.username;
+                    document.getElementById("profilePhone").textContent = user.phone;
+                    document.getElementById("profileEmail").textContent = user.email;
+                });
+
+            // Load and auto-refresh wallet
+            updateWalletDisplay();
+            setInterval(updateWalletDisplay, 5000);
+        });
+
+        
+        function showSection(id) {
+    document.querySelectorAll('.section').forEach(div => div.style.display = 'none');
+    const section = document.getElementById(id);
+    if (section) {
+      section.style.display = 'block';
+      if (id === "betHistorySection") loadBetHistory();
+    }
+  }
+//  Load Bet History
+async function loadBetHistory() {
+  const userId = localStorage.getItem("userid");
+  if (!userId) return;
+
+  try {
+    const res = await fetch(`http://3.111.47.237:3000/api/bets/${userId}`);
+    const bets = await res.json();
+
+    const tbody = document.getElementById("betHistoryTableBody");
+    tbody.innerHTML = "";
+
+    if (bets.length === 0) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="6" style="text-align:center;">No bets found</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    bets.forEach((bet, index) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+         <td>₹${bet.amount}</td>
+         <td>${bet.bet_side}</td>
+        <td>${bet.result_side || '-'}</td>
+        <td style="color:${bet.status === 'Win' ? 'green' : 'red'};">${bet.status}</td>
+        <td>${new Date(bet.created_at).toLocaleString()}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("❌ Failed to fetch bet history:", err);
+  }
+}
+document.addEventListener("DOMContentLoaded", () => {
+    loadBetHistory(); // 👑 Bet History
+  });
+function cancelTransaction(id) {
+  const tx = transactions.find(tx => tx.id === id);
+  if (!tx) return showMessage("❌ Transaction not found", "error");
+
+  if (tx.status?.toLowerCase() !== 'pending') {
+    return showMessage("❌ Only pending withdrawals can be cancelled", "error");
+  }
+
+  if (!confirm("Are you sure you want to cancel this withdrawal request?")) return;
+
+  fetch(`http://3.111.47.237:3000/api/withdraw/cancel/${id}`, {
+    method: "POST"
+  })
+    .then(res => res.json())
+    .then(data => {
+      showMessage(data.message || "✅ Withdrawal cancelled.", "info");
+
+      tx.status = 'Cancelled';  // Update status locally
+      renderTransactions();
+      if (typeof updateWalletDisplay === 'function') {
+        updateWalletDisplay(); // Refresh wallet UI
+      }
+    })
+    .catch(err => {
+      console.error("❌ Cancel error:", err);
+      showMessage("❌ Server error during cancellation.", "error");
+    });
+}
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+        xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
